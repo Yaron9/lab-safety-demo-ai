@@ -55,11 +55,10 @@ function BigScreenPage({ onOpenLab }) {
           <BsCard title="院系安全积分排行" hint="按加权平均">
             <RankList
               rows={[
-                { name: '新能源材料系', score: 93, labs: 2, trend: +2 },
-                { name: '金属材料系', score: 90, labs: 1, trend: 0 },
-                { name: '生物医用材料系', score: 88, labs: 1, trend: -1 },
-                { name: '测试中心', score: 84, labs: 3, trend: +1 },
-                { name: '无机非金属材料系', score: 62, labs: 1, trend: -8 },
+                { name: '材料化学系', score: 91, labs: 3, trend: +2 },
+                { name: '材料工程系', score: 90, labs: 1, trend: 0 },
+                { name: '测试中心',   score: 85, labs: 3, trend: +1 },
+                { name: '材料物理系', score: 62, labs: 1, trend: -8 },
               ]}
             />
           </BsCard>

@@ -21,11 +21,10 @@ function ReportsPage() {
 
   // Department comparison
   const depts = [
-    { n: '新能源材料系', score: 93, eventsDelta: -4, trainDone: 98, hi: true },
-    { n: '金属材料系', score: 90, eventsDelta: -1, trainDone: 95 },
-    { n: '生物医用材料系', score: 88, eventsDelta: 0, trainDone: 92 },
-    { n: '测试中心', score: 84, eventsDelta: -2, trainDone: 89 },
-    { n: '无机非金属材料系', score: 62, eventsDelta: +3, trainDone: 71, lo: true },
+    { n: '材料化学系', score: 91, eventsDelta: -4, trainDone: 96, hi: true },
+    { n: '材料工程系', score: 90, eventsDelta: -1, trainDone: 95 },
+    { n: '测试中心',   score: 85, eventsDelta: -2, trainDone: 89 },
+    { n: '材料物理系', score: 62, eventsDelta: +3, trainDone: 71, lo: true },
   ];
 
   return (
@@ -180,7 +179,7 @@ function ReportsPage() {
 
                 <div className="rp-h2">二、亮点</div>
                 <ul>
-                  <li>新能源材料系 302 / 312 实验室连续 3 个月零违规，建议推为学院标兵；</li>
+                  <li>材料化学系 302 / 312 实验室连续 3 个月零违规，建议推为学院标兵；</li>
                   <li>全员培训完成率较上月提升 <strong>3 个百分点</strong>，达 91%；</li>
                   <li>大屏指挥 + 自动扣分上线后，违规响应时效由 4.2h 缩短至 1.1h。</li>
                 </ul>
@@ -189,7 +188,7 @@ function ReportsPage() {
                 <ul>
                   <li>410 功能材料合成实验室 <strong>安全积分 48 / 100</strong>，已触发关闭整改，4-28 前复检；</li>
                   <li>单人夜间操作告警仍有 3 起，建议与门禁系统联动做硬阻断；</li>
-                  <li>无机非金属系培训率 71%，拟下发专项函。</li>
+                  <li>材料物理系培训率 71%，拟下发专项函。</li>
                 </ul>
               </div>
               <div>
