@@ -20,15 +20,15 @@ const SysMapPage = () => {
     emerg:  { x: 930, y: 70,  w: 170, h: 56, label: '应急联动', sub: '保卫处 · 119' },
 
     // 平台核心（中间）
-    admin:  { x: 140, y: 240, w: 430, h: 200, label: '管理控制台', sub: 'Web · 学院 HSE 管理员' },
-    mp:     { x: 630, y: 240, w: 430, h: 200, label: '微信小程序', sub: '师生 · 巡查员 · 移动端' },
+    admin:  { x: 140, y: 240, w: 400, h: 220, label: '管理控制台', sub: 'Web · 学院 HSE 管理员', icon: '📊' },
+    mp:     { x: 700, y: 240, w: 400, h: 220, label: '微信小程序', sub: '师生 · 巡查员 · 移动端', icon: '📱' },
 
     // 使用人群（底部）
-    admin_role:   { x: 105, y: 570, w: 150, h: 80, label: '学院 HSE 管理员', sub: '配置 · 督办' },
-    leader: { x: 280, y: 570, w: 150, h: 80, label: '学院领导', sub: '看大屏 · 看报表' },
-    teacher:{ x: 455, y: 570, w: 150, h: 80, label: '教师 / 导师', sub: '审核 · 签字' },
-    student:{ x: 695, y: 570, w: 150, h: 80, label: '学生', sub: '预约 · 培训 · 整改' },
-    patrol: { x: 870, y: 570, w: 150, h: 80, label: '巡查员', sub: '现场登记 · 复检' },
+    admin_role:   { x: 105, y: 580, w: 150, h: 80, label: '学院 HSE 管理员', sub: '配置 · 督办' },
+    leader: { x: 280, y: 580, w: 150, h: 80, label: '学院领导', sub: '看大屏 · 看报表' },
+    teacher:{ x: 455, y: 580, w: 150, h: 80, label: '教师 / 导师', sub: '审核 · 签字' },
+    student:{ x: 730, y: 580, w: 150, h: 80, label: '学生', sub: '预约 · 培训 · 整改' },
+    patrol: { x: 905, y: 580, w: 150, h: 80, label: '巡查员', sub: '现场登记 · 复检' },
   };
 
   // 连线与数据流方向（主线故事按顺序走这些）
@@ -130,6 +130,7 @@ const SysMapPage = () => {
       role: { fill: '#fffaf0', stroke: '#e5c68a', text: '#27231b' },
     }[variant];
 
+    const isCore = variant === 'core';
     return (
       <g key={key}
          transform={`translate(${n.x}, ${n.y})`}
@@ -137,21 +138,27 @@ const SysMapPage = () => {
          onMouseLeave={() => !story.playing && setHl(null)}
          style={{ cursor: 'pointer', opacity: dim ? 0.3 : 1, transition: 'opacity 0.3s' }}>
         <rect
-          width={n.w} height={n.h} rx={10}
+          width={n.w} height={n.h} rx={isCore ? 14 : 10}
           fill={color.fill}
           stroke={activeHL ? '#2f6fd8' : color.stroke}
           strokeWidth={activeHL ? 2 : 1.2}
+          style={isCore ? { filter: 'drop-shadow(0 4px 12px rgba(15,23,42,0.06))' } : null}
         />
-        <text x={12} y={22} fontSize={13.5} fontWeight={600} fill={color.text}>{n.label}</text>
-        <text x={12} y={40} fontSize={11} fill="#667085">{n.sub}</text>
-        {variant === 'core' && (
+        {isCore ? (
           <>
-            {/* 核心节点附加内部标签 */}
-            <g transform="translate(12, 58)">
+            {/* core node header — icon + title + sub on one row */}
+            <text x={20} y={36} fontSize={26}>{n.icon}</text>
+            <text x={56} y={32} fontSize={18} fontWeight={700} fill={color.text} letterSpacing="0.02em">{n.label}</text>
+            <text x={56} y={50} fontSize={11.5} fill="#667085" letterSpacing="0.02em">{n.sub}</text>
+            {/* divider */}
+            <line x1={20} y1={68} x2={n.w - 20} y2={68} stroke="#dbe5f3" strokeWidth="1" strokeDasharray="3 4" />
+            {/* internal capability list */}
+            <g transform="translate(20, 90)">
               {(key === 'admin' ? [
                 '今日待办 · 事件中心',
                 '实验室 · 人员 · 危化品',
                 '指挥大屏 · 统计报表',
+                '安全培训 · 合规监控',
                 '规则 · 阈值 · 通知配置',
               ] : [
                 '登录 · 身份选择',
@@ -160,9 +167,17 @@ const SysMapPage = () => {
                 '违规申诉 · 整改拍照',
                 '巡查任务 · 现场登记',
               ]).map((t, i) => (
-                <text key={i} x={0} y={i * 20} fontSize={11.5} fill="#475569">· {t}</text>
+                <g key={i} transform={`translate(0, ${i * 22})`}>
+                  <circle cx={3} cy={-4} r={2} fill="#6ba4ff" />
+                  <text x={14} y={0} fontSize={12.5} fill="#334155">{t}</text>
+                </g>
               ))}
             </g>
+          </>
+        ) : (
+          <>
+            <text x={12} y={22} fontSize={13.5} fontWeight={600} fill={color.text}>{n.label}</text>
+            <text x={12} y={40} fontSize={11} fill="#667085">{n.sub}</text>
           </>
         )}
       </g>
@@ -278,13 +293,35 @@ const SysMapPage = () => {
                     strokeDasharray={e.dashed ? '6 5' : ''}
                     markerEnd={`url(#${mk})`}
                   />
-                  {e.label && (
-                    <text
-                      x={(p1.x + p2.x) / 2} y={(p1.y + p2.y) / 2 - 6}
-                      fontSize={10.5} fill={active ? '#2f6fd8' : '#94a3b8'}
-                      textAnchor="middle" style={{ pointerEvents: 'none' }}
-                    >{e.label}</text>
-                  )}
+                  {e.label && (() => {
+                    const mx = (p1.x + p2.x) / 2;
+                    const my = (p1.y + p2.y) / 2;
+                    const cardW = 140, cardH = 44;
+                    return (
+                      <g style={{ pointerEvents: 'none' }}>
+                        <rect
+                          x={mx - cardW / 2} y={my - cardH / 2}
+                          width={cardW} height={cardH} rx={6}
+                          fill="#ffffff"
+                          stroke={active ? '#bfdbfe' : '#e2e8f0'}
+                          strokeWidth="1"
+                          style={{ filter: 'drop-shadow(0 2px 6px rgba(15,23,42,0.08))' }}
+                        />
+                        <text
+                          x={mx} y={my - 4}
+                          fontSize={11} fontWeight={600}
+                          fill={active ? '#2f6fd8' : '#475569'}
+                          textAnchor="middle"
+                        >双向同步 ⇄</text>
+                        <text
+                          x={mx} y={my + 12}
+                          fontSize={10}
+                          fill={active ? '#6ba4ff' : '#94a3b8'}
+                          textAnchor="middle"
+                        >规则 · 事件 · 权限</text>
+                      </g>
+                    );
+                  })()}
                   {/* 粒子动画 */}
                   {active && (
                     <circle r={active ? 4.5 : 3} fill={isDanger ? '#dc2626' : '#2f6fd8'}>
