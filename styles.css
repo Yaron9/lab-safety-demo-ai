@@ -385,10 +385,10 @@ kbd { font-family: var(--font-num); font-size: 10px; color: var(--ink-2); border
   line-height: 1;
 }
 .bs-radar-meta {
-  font-size: 9px;
+  font-size: 11px;
   color: #7ca0cc;
-  margin-top: 6px;
-  letter-spacing: 0.16em;
+  margin-top: 14px;
+  letter-spacing: 0.18em;
   font-family: var(--font-num);
 }
 
