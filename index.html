@@ -22,6 +22,7 @@
 <script type="text/babel" src="page-labs.jsx"></script>
 <script type="text/babel" src="page-other.jsx"></script>
 <script type="text/babel" src="page-bigscreen.jsx"></script>
+<script type="text/babel" src="page-training.jsx"></script>
 <script type="text/babel" src="page-reports.jsx"></script>
 <script type="text/babel" src="page-sysmap.jsx"></script>
 
@@ -63,6 +64,7 @@ function App() {
     events: ['工作台', '事件中心'],
     labs: ['台账', '实验室'],
     people: ['台账', '人员'],
+    training: ['台账', '安全培训'],
     chems: ['台账', '危化品'],
     bigscreen: ['工作台', '指挥大屏'],
     reports: ['系统', '统计报表'],
@@ -80,6 +82,7 @@ function App() {
           {page === 'events' && <EventsPage onOpenEvent={setEvOpen} />}
           {page === 'labs' && <LabsPage onOpenLab={setLabOpen} />}
           {page === 'people' && <PeoplePage />}
+          {page === 'training' && <TrainingPage />}
           {page === 'bigscreen' && <BigScreenPage />}
           {page === 'chems' && <PlaceholderPage
             title="危化品 · 资产台账"
