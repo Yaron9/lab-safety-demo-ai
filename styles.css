@@ -311,118 +311,158 @@ kbd { font-family: var(--font-num); font-size: 10px; color: var(--ink-2); border
 .bs-ring-wrap > svg { flex-shrink: 0; width: 170px; height: 170px; align-self: center; }
 .bs-ring-wrap > svg.bs-radar { filter: drop-shadow(0 0 12px rgba(107, 164, 255, 0.18)); }
 
-/* Safety monitor — PPI radar + stats side-by-side */
-.bs-safety-monitor {
+/* ===========================================================
+   Safety Radar Monitor v3
+   Left: phosphor PPI disc (sweep + 8 lab blips + center status)
+   Right: 5 data-bound subsystem rows + 3 lab-count summary boxes
+   =========================================================== */
+.bs-radar {
   display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 16px;
-  align-items: center;
+  grid-template-columns: 130px 1fr;
+  gap: 14px;
+  align-items: stretch;
 }
 
-/* PPI Radar — 飞机驾驶舱风格雷达 */
-.bs-ppi {
-  width: 160px;
-  height: 160px;
+/* Left — phosphor radar disc */
+.bs-radar-disc {
+  width: 130px;
+  height: 130px;
   position: relative;
+  align-self: center;
   border-radius: 50%;
   overflow: hidden;
   background:
-    radial-gradient(circle at 35% 30%, rgba(126, 243, 166, 0.06) 0%, transparent 55%),
+    radial-gradient(circle at 35% 30%, rgba(126,243,166,0.06) 0%, transparent 55%),
     radial-gradient(circle, #0a1f15 0%, #04110a 75%, #02080a 100%);
   box-shadow:
-    inset 0 0 28px rgba(74, 222, 128, 0.12),
-    inset 0 0 0 1px rgba(74, 222, 128, 0.18),
-    0 0 22px rgba(74, 222, 128, 0.18),
-    0 0 0 4px #0a1024,
-    0 0 0 5px rgba(74, 222, 128, 0.15);
+    inset 0 0 28px rgba(74,222,128,0.12),
+    inset 0 0 0 1px rgba(74,222,128,0.18),
+    0 0 22px rgba(74,222,128,0.18),
+    0 0 0 3px #0a1024,
+    0 0 0 4px rgba(74,222,128,0.18);
 }
-.bs-ppi-base {
+.bs-radar-base {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
   z-index: 1;
 }
-.bs-ppi-sweep {
+
+/* conic-gradient sweep arm — 4s rotation, ~90° trailing fade */
+.bs-radar-sweep {
   position: absolute; inset: 0;
   border-radius: 50%;
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
     transparent 270deg,
-    rgba(74, 222, 128, 0.04) 285deg,
-    rgba(74, 222, 128, 0.18) 320deg,
-    rgba(74, 222, 128, 0.55) 350deg,
-    rgba(126, 243, 166, 0.85) 359deg,
+    rgba(74,222,128,0.04) 285deg,
+    rgba(74,222,128,0.20) 320deg,
+    rgba(74,222,128,0.55) 350deg,
+    rgba(126,243,166,0.88) 359deg,
     transparent 360deg
   );
-  animation: bs-ppi-spin 4s linear infinite;
+  animation: bs-radar-sweep 4s linear infinite;
   z-index: 2;
   pointer-events: none;
   mix-blend-mode: screen;
 }
-@keyframes bs-ppi-spin {
+@keyframes bs-radar-sweep {
   to { transform: rotate(360deg); }
 }
-/* a thin bright line marking the sweep leading edge */
-.bs-ppi-sweep::after {
-  content: "";
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 50%; height: 1.2px;
-  background: linear-gradient(90deg, transparent, rgba(126,243,166,0.95));
-  transform-origin: left center;
-  transform: rotate(-90deg);
-  filter: drop-shadow(0 0 4px rgba(126,243,166,0.9));
+
+.bs-radar-status {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 3; pointer-events: none;
+}
+.bs-radar-label {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+.bs-radar-meta {
+  font-size: 9px;
+  color: #7ca0cc;
+  margin-top: 6px;
+  letter-spacing: 0.16em;
+  font-family: var(--font-num);
 }
 
-.bs-ppi-core {
-  position: absolute;
-  inset: 0;
+/* Right — subsystem checks + summary */
+.bs-radar-side {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.bs-radar-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bs-radar-check {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  z-index: 3;
-  pointer-events: none;
-  font-family: -apple-system, "PingFang SC", sans-serif;
-}
-.bs-ppi-risk {
-  font-size: 42px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  line-height: 1;
-  font-family: -apple-system, "PingFang SC", sans-serif;
-}
-.bs-ppi-sub {
+  gap: 8px;
   font-size: 11px;
-  color: #7ca0cc;
-  margin-top: 10px;
-  letter-spacing: 0.2em;
-  font-family: var(--font-num);
-  text-transform: uppercase;
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.22);
+  border-radius: 4px;
+  border: 1px solid rgba(74,222,128,0.08);
+  white-space: nowrap;
 }
+.bs-radar-check .lbl {
+  color: #cdd6e8;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.bs-radar-check .val {
+  font-family: var(--font-num);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bs-radar-check .val.tone-ok { color: #4ade80; }
+.bs-radar-check .val.tone-warn { color: #fbbf24; }
+.bs-radar-check .val.tone-err { color: #f87171; }
 
-.bs-sm-stats {
+.bs-radar-summary {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 6px;
+  margin-top: 2px;
+}
+.bs-radar-summary .sum {
+  background: rgba(0,0,0,0.28);
+  border-radius: 6px;
+  padding: 7px 0;
   text-align: center;
-  border-left: 1px solid #1a2340;
-  padding-left: 14px;
+  border: 1px solid rgba(255,255,255,0.05);
 }
-.bs-sm-stat .num {
-  font-family: var(--font-num);
-  font-size: 36px;
+.bs-radar-summary .sum .num {
+  display: block;
+  font-size: 22px;
   font-weight: 800;
+  font-family: var(--font-num);
+  line-height: 1.1;
   letter-spacing: -0.02em;
-  line-height: 1;
 }
-.bs-sm-stat .lbl {
-  font-size: 13px;
-  color: #cdd6e8;
-  margin-top: 8px;
-  letter-spacing: 0.12em;
-  font-weight: 500;
+.bs-radar-summary .sum .lbl {
+  display: block;
+  font-size: 11px;
+  margin-top: 3px;
+  color: #7ca0cc;
+  letter-spacing: 0.08em;
 }
+.bs-radar-summary .sum-ok .num { color: #4ade80; }
+.bs-radar-summary .sum-warn .num { color: #fbbf24; }
+.bs-radar-summary .sum-crit .num { color: #f87171; }
 .bs-ring-legend { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .bs-legend-row {
   display: grid; grid-template-columns: 10px minmax(0, 1fr) auto auto; gap: 8px;

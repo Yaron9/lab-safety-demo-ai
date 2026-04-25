@@ -36,122 +36,16 @@ function BigScreenPage({ onOpenLab }) {
       <div className="bs-grid">
         {/* LEFT COLUMN */}
         <div className="bs-col">
-          <BsCard title="安全实时监控" hint="实时 · LIVE" accent="#4ade80">
-            <div className="bs-safety-monitor">
-              {(() => {
-                const riskColor = rectifying > 0 ? '#f87171' : warnCount > 0 ? '#fbbf24' : '#4ade80';
-                const riskLabel = rectifying > 0 ? '预警' : warnCount > 0 ? '关注' : '正常';
-                // 8 个实验室作为雷达上的 blip — 按 status 着色
-                const blips = labs.map((l, i) => {
-                  const a = (i / labs.length) * 2 * Math.PI - Math.PI / 2 + 0.2;
-                  const r = 32 + ((i * 13) % 50);   // pseudo-random distance
-                  return {
-                    cx: Math.cos(a) * r, cy: Math.sin(a) * r,
-                    color: l.status === 'rectifying' ? '#f87171'
-                          : l.status === 'warning' ? '#fbbf24' : '#4ade80',
-                    delay: (i * 0.4) % 4,
-                  };
-                });
-                return (
-                  <div className="bs-ppi">
-                    <svg className="bs-ppi-base" viewBox="-100 -100 200 200">
-                      {/* range rings */}
-                      <circle r="94" fill="none" stroke="#0e3a2a" strokeWidth="0.6" />
-                      <circle r="72" fill="none" stroke="#0e3a2a" strokeWidth="0.5" strokeDasharray="2 3" />
-                      <circle r="48" fill="none" stroke="#0e3a2a" strokeWidth="0.5" strokeDasharray="2 3" />
-                      <circle r="24" fill="none" stroke="#0e3a2a" strokeWidth="0.5" strokeDasharray="2 3" />
-
-                      {/* bearing spokes (4 axes) */}
-                      <g stroke="#0e3a2a" strokeWidth="0.4" strokeDasharray="1.5 3">
-                        <line x1="-94" y1="0" x2="94" y2="0" />
-                        <line x1="0" y1="-94" x2="0" y2="94" />
-                        <line x1="-66" y1="-66" x2="66" y2="66" />
-                        <line x1="-66" y1="66" x2="66" y2="-66" />
-                      </g>
-
-                      {/* compass labels */}
-                      <g fill="#2a7a5a" fontSize="6" fontFamily='"JetBrains Mono", monospace' letterSpacing="0.1em">
-                        <text x="0"  y="-86" textAnchor="middle">N</text>
-                        <text x="86" y="2"   textAnchor="end">E</text>
-                        <text x="0"  y="92"  textAnchor="middle">S</text>
-                        <text x="-86" y="2"  textAnchor="start">W</text>
-                      </g>
-
-                      {/* outer tick marks every 30° */}
-                      <g stroke="#1a4d3a" strokeWidth="0.5">
-                        {Array.from({ length: 36 }, (_, i) => {
-                          const a = (i * 10 - 90) * Math.PI / 180;
-                          const r1 = 90, r2 = i % 3 === 0 ? 96 : 93;
-                          return (
-                            <line key={'tk' + i}
-                              x1={Math.cos(a) * r1} y1={Math.sin(a) * r1}
-                              x2={Math.cos(a) * r2} y2={Math.sin(a) * r2}
-                              strokeOpacity={i % 3 === 0 ? 0.85 : 0.4} />
-                          );
-                        })}
-                      </g>
-
-                      {/* center crosshair */}
-                      <g stroke="#3a8a6a" strokeWidth="0.6">
-                        <line x1="-6" y1="0" x2="-2" y2="0" />
-                        <line x1="2" y1="0" x2="6" y2="0" />
-                        <line x1="0" y1="-6" x2="0" y2="-2" />
-                        <line x1="0" y1="2" x2="0" y2="6" />
-                      </g>
-
-                      {/* blip dots — each lab as a target, pulsing */}
-                      <g>
-                        {blips.map((b, i) => (
-                          <g key={'b' + i}>
-                            <circle cx={b.cx} cy={b.cy} r="2" fill={b.color}>
-                              <animate attributeName="opacity"
-                                values="0.25;1;0.25"
-                                dur="3.4s"
-                                begin={`${b.delay}s`}
-                                repeatCount="indefinite" />
-                            </circle>
-                            <circle cx={b.cx} cy={b.cy} r="3.2" fill="none"
-                              stroke={b.color} strokeWidth="0.6">
-                              <animate attributeName="r"
-                                values="2;6;2" dur="3.4s"
-                                begin={`${b.delay}s`}
-                                repeatCount="indefinite" />
-                              <animate attributeName="opacity"
-                                values="0.6;0;0.6" dur="3.4s"
-                                begin={`${b.delay}s`}
-                                repeatCount="indefinite" />
-                            </circle>
-                          </g>
-                        ))}
-                      </g>
-                    </svg>
-
-                    {/* rotating sweep arm with phosphor afterglow */}
-                    <div className="bs-ppi-sweep" />
-
-                    {/* center data console */}
-                    <div className="bs-ppi-core">
-                      <div className="bs-ppi-risk" style={{ color: riskColor, textShadow: `0 0 14px ${riskColor}` }}>{riskLabel}</div>
-                      <div className="bs-ppi-sub">全院 {labs.length} 间</div>
-                    </div>
-                  </div>
-                );
-              })()}
-              <div className="bs-sm-stats">
-                <div className="bs-sm-stat">
-                  <div className="num" style={{ color: '#4ade80' }}>{normalCount}</div>
-                  <div className="lbl">正常</div>
-                </div>
-                <div className="bs-sm-stat">
-                  <div className="num" style={{ color: '#fbbf24' }}>{warnCount}</div>
-                  <div className="lbl">关注</div>
-                </div>
-                <div className="bs-sm-stat">
-                  <div className="num" style={{ color: '#f87171' }}>{rectifying}</div>
-                  <div className="lbl">预警</div>
-                </div>
-              </div>
-            </div>
+          <BsCard title="安全实时监控" hint="实时扫描" accent="#4ade80">
+            <RadarMonitor
+              labs={labs}
+              normalCount={normalCount}
+              warnCount={warnCount}
+              rectifying={rectifying}
+              totalIn={totalIn}
+              avgScore={avgScore}
+              activeEvents={active}
+            />
           </BsCard>
 
           <BsCard title="近 7 日事件趋势" hint="日均 26 · 环比 ↓12%" accent="#6ba4ff">
@@ -472,6 +366,172 @@ function PeopleFlow() {
 
 function Dot({ c }) {
   return <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: c, marginRight: 4, marginLeft: 8 }}></span>;
+}
+
+/* ===========================================================
+   RadarMonitor — 安全实时监控 v3
+   左：磷光绿 PPI 雷达盘（conic-gradient sweep + 8 个 lab blip）
+   右：5 行子系统检查（全部数据驱动）+ 3 个 alm 盒（实验室计数）
+   =========================================================== */
+function RadarMonitor({ labs, normalCount, warnCount, rectifying, totalIn, avgScore, activeEvents }) {
+  // 整体风险等级（与 alm 盒和中心字保持一致）
+  const riskLabel = rectifying > 0 ? '预警' : warnCount > 0 ? '关注' : '正常';
+  const riskColor = rectifying > 0 ? '#f87171' : warnCount > 0 ? '#fbbf24' : '#4ade80';
+
+  // 5 行子系统数据 —— 全部从 MOCK 反算
+  const tempAbnormal = labs.filter(l => l.temp > 26 || l.temp < 18).length;
+  const chemAlerts = MOCK.events.filter(e =>
+    /可燃试剂|废液|腐蚀|氢氟|化学|烟感|污染/.test(e.title) &&
+    (e.status === 'active' || e.status === 'pending')
+  ).length;
+  const accessAlerts = MOCK.accessFlow.filter(a =>
+    /拒绝|⚠|告警/.test(a.action)
+  ).length;
+  const pendingEvents = activeEvents.length;
+
+  const tone = (cond) => cond === 'ok' ? 'ok' : cond === 'warn' ? 'warn' : 'err';
+
+  const subsystems = [
+    {
+      label: '温度监测',
+      value: tempAbnormal === 0 ? '正常' : `${tempAbnormal} 间偏离`,
+      tone: tempAbnormal === 0 ? 'ok' : tempAbnormal >= 3 ? 'err' : 'warn',
+    },
+    {
+      label: '在室人员',
+      value: `${totalIn} 人 / ${labs.length} 间`,
+      tone: 'ok',
+    },
+    {
+      label: '危化告警',
+      value: chemAlerts === 0 ? '正常' : `${chemAlerts} 项`,
+      tone: chemAlerts === 0 ? 'ok' : chemAlerts >= 3 ? 'err' : 'warn',
+    },
+    {
+      label: '门禁通行',
+      value: accessAlerts === 0 ? '正常' : `${accessAlerts} 次异常`,
+      tone: accessAlerts === 0 ? 'ok' : accessAlerts >= 3 ? 'err' : 'warn',
+    },
+    {
+      label: '综合积分',
+      value: `${avgScore} / 100`,
+      tone: avgScore >= 85 ? 'ok' : avgScore >= 70 ? 'warn' : 'err',
+    },
+  ];
+
+  // 8 间实验室 → 雷达上的 blip
+  const blips = labs.map((l, i) => {
+    const a = (i / labs.length) * 2 * Math.PI - Math.PI / 2 + 0.2;
+    const r = 32 + ((i * 13) % 50);
+    return {
+      cx: Math.cos(a) * r, cy: Math.sin(a) * r,
+      color: l.status === 'rectifying' ? '#f87171'
+            : l.status === 'warning' ? '#fbbf24' : '#4ade80',
+      delay: (i * 0.4) % 4,
+      isAlert: l.status !== 'normal',
+    };
+  });
+
+  return (
+    <div className="bs-radar">
+      <div className="bs-radar-disc">
+        <svg className="bs-radar-base" viewBox="-100 -100 200 200">
+          {/* range rings */}
+          <circle r="94" fill="none" stroke="rgba(74,222,128,0.18)" strokeWidth="0.5" />
+          <circle r="68" fill="none" stroke="rgba(74,222,128,0.14)" strokeWidth="0.4" strokeDasharray="2 4" />
+          <circle r="44" fill="none" stroke="rgba(74,222,128,0.14)" strokeWidth="0.4" strokeDasharray="2 4" />
+          <circle r="22" fill="none" stroke="rgba(74,222,128,0.12)" strokeWidth="0.4" strokeDasharray="2 4" />
+
+          {/* axes */}
+          <g stroke="rgba(74,222,128,0.10)" strokeWidth="0.4" strokeDasharray="1.5 3">
+            <line x1="-94" y1="0" x2="94" y2="0" />
+            <line x1="0" y1="-94" x2="0" y2="94" />
+          </g>
+
+          {/* 36 outer ticks */}
+          <g stroke="rgba(74,222,128,0.45)">
+            {Array.from({ length: 36 }, (_, i) => {
+              const a = (i * 10 - 90) * Math.PI / 180;
+              const r1 = 90, r2 = i % 3 === 0 ? 96 : 93;
+              return (
+                <line key={'tk' + i}
+                  x1={Math.cos(a) * r1} y1={Math.sin(a) * r1}
+                  x2={Math.cos(a) * r2} y2={Math.sin(a) * r2}
+                  strokeWidth={i % 3 === 0 ? 0.7 : 0.4}
+                  strokeOpacity={i % 3 === 0 ? 0.85 : 0.35} />
+              );
+            })}
+          </g>
+
+          {/* center crosshair */}
+          <g stroke="#3a8a6a" strokeWidth="0.6">
+            <line x1="-6" y1="0" x2="-2" y2="0" />
+            <line x1="2" y1="0" x2="6" y2="0" />
+            <line x1="0" y1="-6" x2="0" y2="-2" />
+            <line x1="0" y1="2" x2="0" y2="6" />
+          </g>
+
+          {/* blips — 8 间实验室 */}
+          <g>
+            {blips.map((b, i) => (
+              <g key={'b' + i}>
+                <circle cx={b.cx} cy={b.cy} r="2" fill={b.color}>
+                  <animate attributeName="opacity"
+                    values="0.3;1;0.3" dur="3.4s"
+                    begin={`${b.delay}s`} repeatCount="indefinite" />
+                </circle>
+                {b.isAlert && (
+                  <circle cx={b.cx} cy={b.cy} r="3" fill="none"
+                    stroke={b.color} strokeWidth="0.6">
+                    <animate attributeName="r" values="2;7;2" dur="3.4s"
+                      begin={`${b.delay}s`} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.7;0;0.7" dur="3.4s"
+                      begin={`${b.delay}s`} repeatCount="indefinite" />
+                  </circle>
+                )}
+              </g>
+            ))}
+          </g>
+        </svg>
+
+        {/* conic-gradient 旋转扫描臂 */}
+        <div className="bs-radar-sweep" />
+
+        {/* 中心状态 */}
+        <div className="bs-radar-status">
+          <div className="bs-radar-label" style={{ color: riskColor, textShadow: `0 0 14px ${riskColor}` }}>
+            {riskLabel}
+          </div>
+          <div className="bs-radar-meta">{labs.length} 间 · 已扫描</div>
+        </div>
+      </div>
+
+      <div className="bs-radar-side">
+        <div className="bs-radar-checks">
+          {subsystems.map((s, i) => (
+            <div key={i} className="bs-radar-check">
+              <span className="lbl">{s.label}</span>
+              <span className={'val tone-' + s.tone}>{s.value}</span>
+            </div>
+          ))}
+        </div>
+        <div className="bs-radar-summary">
+          <div className="sum sum-ok">
+            <span className="num">{normalCount}</span>
+            <span className="lbl">正常</span>
+          </div>
+          <div className="sum sum-warn">
+            <span className="num">{warnCount}</span>
+            <span className="lbl">关注</span>
+          </div>
+          <div className="sum sum-crit">
+            <span className="num">{rectifying}</span>
+            <span className="lbl">预警</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 window.BigScreenPage = BigScreenPage;
