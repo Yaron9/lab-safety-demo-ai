@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>实验室电子门牌 · 1080×1920</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="door-display.css">
+<style>
+  body {
+    margin: 0;
+    background: #0b1428;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    color: rgba(255, 255, 255, 0.78);
+  }
+  .dd-stage { display: flex; flex-direction: column; align-items: center; padding: 18px 16px 60px; gap: 18px; }
+  .dd-toolbar {
+    width: 100%; max-width: 1040px;
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+  }
+  .dd-toolbar h1 { font-size: 16px; margin: 0; color: #fff; font-weight: 600; }
+  .dd-toolbar .sub { font-size: 13px; color: rgba(255, 255, 255, 0.55); }
+  .dd-toolbar .sub .mono { font-family: "JetBrains Mono", monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+  .dd-scene-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+  .dd-scene-chips button {
+    padding: 7px 14px; border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.04); color: rgba(255, 255, 255, 0.78);
+    border-radius: 6px; font-size: 12.5px; cursor: pointer;
+    font-family: inherit; transition: all 0.15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .dd-scene-chips button:hover { border-color: rgba(255, 255, 255, 0.4); color: #fff; }
+  .dd-scene-chips button.active { background: #fff; color: #0b1428; border-color: #fff; font-weight: 600; }
+  .dd-scene-chips .chip-dot { width: 10px; height: 10px; border-radius: 3px; }
+  .dd-toggle {
+    padding: 7px 12px; border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.04); color: rgba(255, 255, 255, 0.78);
+    border-radius: 6px; font-size: 12px; cursor: pointer; font-family: inherit;
+  }
+  .dd-toggle.on { background: rgba(201, 169, 97, 0.18); color: #c9a961; border-color: rgba(201, 169, 97, 0.55); }
+  /* device frame */
+  .dd-frame {
+    width: calc(1080px * var(--dd-scale, 0.45));
+    height: calc(1920px * var(--dd-scale, 0.45));
+    position: relative;
+    border-radius: 24px;
+    box-shadow:
+      0 30px 80px -10px rgba(0, 0, 0, 0.7),
+      0 0 0 5px #0b2348,
+      0 0 0 7px #1e293b;
+    overflow: hidden;
+  }
+  .dd-frame .dd-root { transform: scale(var(--dd-scale, 0.45)); transform-origin: top left; }
+  .dd-frame::after {
+    content: ""; position: absolute; bottom: -3px; left: 50%;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 6px rgba(74, 222, 128, 0.7);
+    transform: translateX(-50%);
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel">
+// ============================================================
+// 电子门牌 · 仅展示关键信息
+// 借 Gemini 的字号 / 留白 / 圆角节奏 + 我的 8 状态架构
+// ============================================================
+
+const LAB = {
+  id: '302',
+  name: '电化学与储能材料实验室',
+  dept: '材料化学系',
+  lead: '赵振华',
+  hazards: ['腐蚀', '火灾', '爆炸', '中毒', '高压'],
+  contacts: [
+    { role: '负责人', name: '赵振华', phone: '·· 6602' },
+    { role: '安全员', name: '王玉鸿', phone: '·· 6688' },
+  ],
+};
+
+const PRESENCE = [
+  { name: '陈延松', role: '导师', gold: true },
+  { name: '李思远', role: '研23' },
+  { name: '张一凡', role: '研24' },
+];
+
+// === 8 SCENES ===
+const SCENES = [
+  {
+    k: 'free', label: '空闲开放', state: 'free', chipDot: '#15803d',
+    statusLabel: '空闲开放',
+    temp: 22.4, humidity: 52, score: 92, scoreCls: 'score-good',
+    presence: [],
+    notice: { tone: 'green', ico: '✓', text: '当前可预约进入 · 14:00 起 张一凡 等 3 人有预约' },
+    qr: 'idle', cam: 'idle',
+    safetyTag: { tone: 'green', label: '安全状态 · 正常' },
+  },
+  {
+    k: 'busy', label: '使用中', state: 'busy', chipDot: '#1e5eb5',
+    statusLabel: '使用中',
+    temp: 23.1, humidity: 48, score: 92, scoreCls: 'score-good',
+    presence: PRESENCE,
+    notice: { tone: 'blue', ico: 'i', text: '实验进行中 · 14:00 - 17:00 · 入内请穿戴实验服与护目镜' },
+    qr: 'idle', cam: 'idle',
+    safetyTag: { tone: 'green', label: '安全状态 · 正常' },
+  },
+  {
+    k: 'high', label: '高风险作业', state: 'crit', chipDot: '#dc2626',
+    statusLabel: '高风险作业',
+    temp: 36.8, humidity: 42, score: 88, scoreCls: 'score-good', tempAlert: true,
+    presence: PRESENCE.slice(0, 2),
+    notice: { tone: 'red', ico: '!', text: '高温烧结 800°C · 严禁无关人员进入 · 预计 16:30 结束' },
+    qr: 'disabled', cam: 'idle', haztape: true,
+    safetyTag: { tone: 'amber', label: '安全状态 · 关注' },
+  },
+  {
+    k: 'rect', label: '整改中 (停用)', state: 'crit', chipDot: '#dc2626',
+    statusLabel: '整改中 · 已停用',
+    temp: 22.0, humidity: 50, score: 48, scoreCls: 'score-bad',
+    presence: [],
+    notice: { tone: 'red', ico: '!', text: '安全状态：未通过 · 废液桶未分类 扣 5 分 · 04-28 前完成整改后方可恢复运行' },
+    qr: 'disabled', cam: 'idle', haztape: true, qrStamp: '整改',
+    safetyTag: { tone: 'red', label: '安全状态 · 整改' },
+  },
+  {
+    k: 'closed', label: '关闭维护', state: 'off', chipDot: '#64748b',
+    statusLabel: '关闭维护',
+    temp: 21.0, humidity: 50, score: 92, scoreCls: 'score-good',
+    presence: [],
+    notice: { tone: 'gray', ico: '⏻', text: '通风系统检修中 · 预计 04-29 09:00 恢复 · 请勿强行进入' },
+    qr: 'disabled', cam: 'idle',
+    safetyTag: { tone: 'gray', label: '安全状态 · 计划停机' },
+  },
+  {
+    k: 'scan', label: '扫码识别', state: 'busy', chipDot: '#b45309',
+    statusLabel: '识别中',
+    temp: 23.1, humidity: 48, score: 92, scoreCls: 'score-good',
+    presence: PRESENCE,
+    notice: { tone: 'amber', ico: '?', text: '识别中 · 请正对摄像头 · 张一凡（研24 · 已预约）正在核验' },
+    qr: 'scanning', cam: 'scanning',
+    safetyTag: { tone: 'green', label: '安全状态 · 正常' },
+  },
+  {
+    k: 'success', label: '识别成功', state: 'busy', chipDot: '#15803d',
+    statusLabel: '使用中',
+    temp: 23.1, humidity: 48, score: 92, scoreCls: 'score-good',
+    presence: PRESENCE,
+    notice: { tone: 'blue', ico: 'i', text: '实验进行中 · 14:00 - 17:00' },
+    qr: 'idle', cam: 'idle', overlay: 'success',
+    safetyTag: { tone: 'green', label: '安全状态 · 正常' },
+  },
+  {
+    k: 'fail', label: '识别失败', state: 'busy', chipDot: '#dc2626',
+    statusLabel: '使用中',
+    temp: 23.1, humidity: 48, score: 92, scoreCls: 'score-good',
+    presence: PRESENCE,
+    notice: { tone: 'blue', ico: 'i', text: '实验进行中 · 14:00 - 17:00' },
+    qr: 'idle', cam: 'err', overlay: 'fail',
+    safetyTag: { tone: 'green', label: '安全状态 · 正常' },
+  },
+  {
+    k: 'alert', label: '紧急事件', state: 'crit', chipDot: '#c9a961',
+    statusLabel: '紧急事件',
+    temp: 28.3, humidity: 60, score: 78, scoreCls: 'score-warn', tempAlert: true,
+    presence: PRESENCE.slice(0, 2),
+    notice: { tone: 'red', ico: '!', text: '紧急事件 · 请勿靠近 · 14:32 检测到高浓度 VOC · 安全员已派出' },
+    qr: 'disabled', cam: 'err', haztape: true, alert: true,
+    safetyTag: { tone: 'red', label: '安全状态 · 紧急' },
+  },
+];
+
+// ============================================================
+// HEADER
+// ============================================================
+function Header({ scene, time, date }) {
+  return (
+    <header className="dd-header">
+      <div className="dd-header-top">
+        <div className="dd-lab-id">
+          <span className="id-prefix">D-</span>
+          {LAB.id}
+        </div>
+        <div className="dd-header-status">
+          <div className="dd-status">
+            <span className="dot"></span>
+            {scene.statusLabel}
+          </div>
+          {scene.safetyTag && (
+            <div className={'dd-safety-tag tone-' + scene.safetyTag.tone}>
+              {scene.safetyTag.label}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="dd-lab-name">{LAB.name}</div>
+      <div className="dd-lab-meta">
+        <span>{LAB.dept}</span>
+        <span className="clock">{time.slice(0,5)}<span className="sec">:{time.slice(6)}</span></span>
+      </div>
+      <div className="dd-contact-row">
+        {LAB.contacts.map((c, i) => (
+          <div key={i} className="dd-contact-pill">
+            <span className="role">{c.role}</span>
+            <span className="name">{c.name}</span>
+            <span className="phone">📞 {c.phone}</span>
+          </div>
+        ))}
+      </div>
+    </header>
+  );
+}
+
+// ============================================================
+// MAIN  ·  hazards / KPIs / presence
+// ============================================================
+function Hazards() {
+  return (
+    <div className="dd-card">
+      <div className="dd-sec-title">
+        <span>危险类别</span>
+      </div>
+      <div className="dd-hazards">
+        {LAB.hazards.map(h => (
+          <span key={h} className="dd-haz-tag">⚠ {h}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function KPIs({ scene }) {
+  return (
+    <div className="dd-kpis">
+      <div className="dd-kpi">
+        <div className="dd-kpi-label">温度</div>
+        <div className={'dd-kpi-value' + (scene.tempAlert ? ' alert' : '')}>
+          <span className="num">{scene.temp.toFixed(1)}</span>
+          <span className="unit">°C</span>
+        </div>
+      </div>
+      <div className="dd-kpi">
+        <div className="dd-kpi-label">湿度</div>
+        <div className="dd-kpi-value">
+          <span className="num">{scene.humidity}</span>
+          <span className="unit">%</span>
+        </div>
+      </div>
+      <div className="dd-kpi">
+        <div className="dd-kpi-label">安全积分</div>
+        <div className={'dd-kpi-value ' + scene.scoreCls}>
+          <span className="num">{scene.score}</span>
+          <span className="unit">分</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Presence({ scene }) {
+  return (
+    <div className="dd-card flex-grow">
+      <div className="dd-sec-title">
+        <span>当前在室人员</span>
+        <span className="dd-people-count">{scene.presence.length} 人</span>
+      </div>
+      <div className="dd-people-list">
+        {scene.presence.length === 0 ? (
+          <div className="dd-people-empty">
+            {scene.k === 'closed' ? '本时段无人员进出 · 实验室处于维护' : '本时段暂无人员在场'}
+          </div>
+        ) : scene.presence.map((p, i) => (
+          <div key={i} className={'dd-person' + (p.gold ? ' gold' : '')}>
+            <div className="av">{p.name[0]}</div>
+            <div className="info">
+              <div className="name">{p.name}</div>
+              <div className="role">{p.role}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// QR (seeded SVG)
+// ============================================================
+function buildQR(seed = 314159, n = 25) {
+  const mods = new Uint8Array(n * n);
+  let s = seed;
+  const rnd = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  for (let i = 0; i < n * n; i++) mods[i] = rnd() < 0.45 ? 1 : 0;
+  const set = (r, c, w, h, v) => {
+    for (let dr = 0; dr < h; dr++) for (let dc = 0; dc < w; dc++) {
+      const rr = r + dr, cc = c + dc;
+      if (rr >= 0 && cc >= 0 && rr < n && cc < n) mods[rr * n + cc] = v;
+    }
+  };
+  const finder = (r, c) => { set(r, c, 7, 7, 1); set(r + 1, c + 1, 5, 5, 0); set(r + 2, c + 2, 3, 3, 1); };
+  finder(0, 0); finder(0, n - 7); finder(n - 7, 0);
+  set(7, 0, 1, 8, 0); set(0, 7, 8, 1, 0);
+  set(7, n - 8, 1, 8, 0); set(0, n - 8, 8, 1, 0);
+  set(n - 8, 0, 1, 8, 0); set(n - 8, 7, 8, 1, 0);
+  set(n - 9, n - 9, 5, 5, 1); set(n - 8, n - 8, 3, 3, 0); set(n - 7, n - 7, 1, 1, 1);
+  for (let i = 8; i < n - 8; i++) {
+    mods[6 * n + i] = (i % 2 === 0) ? 1 : 0;
+    mods[i * n + 6] = (i % 2 === 0) ? 1 : 0;
+  }
+  return { mods, n };
+}
+const QR = buildQR();
+function QRCode() {
+  const { mods, n } = QR;
+  const cells = [];
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      if (mods[r * n + c]) {
+        cells.push(<rect key={r * n + c} x={c} y={r} width="1" height="1" fill="#0b2348" />);
+      }
+    }
+  }
+  return <svg viewBox={`0 0 ${n} ${n}`} shapeRendering="crispEdges">{cells}</svg>;
+}
+
+// ============================================================
+// CAMERA
+// ============================================================
+function FaceMesh() {
+  const pts = [
+    [50, 28], [38, 32], [62, 32],
+    [42, 42], [58, 42], [50, 50],
+    [44, 60], [50, 62], [56, 60],
+    [32, 48], [68, 48],
+    [40, 70], [50, 72], [60, 70],
+  ];
+  return (
+    <svg className="dd-cam-mesh" viewBox="0 0 100 100" preserveAspectRatio="none"
+         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+      {pts.map((p, i) => <circle key={i} cx={p[0]} cy={p[1]} r="0.9" />)}
+      {[[0,1],[0,2],[3,4],[3,9],[4,10],[5,7],[6,7],[7,8],[11,12],[12,13]].map(([a, b], i) => {
+        const A = pts[a], B = pts[b];
+        return <line key={'l'+i} x1={A[0]} y1={A[1]} x2={B[0]} y2={B[1]} strokeWidth="0.4" />;
+      })}
+    </svg>
+  );
+}
+
+function Camera({ state }) {
+  const cls = 'dd-cam' + (state === 'scanning' ? ' scanning' : state === 'err' ? ' err' : '');
+  return (
+    <div className={cls}>
+      <svg className="feed" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <defs>
+          <radialGradient id="camBg" cx="50%" cy="40%" r="65%">
+            <stop offset="0%" stopColor="#3a445e" />
+            <stop offset="65%" stopColor="#151a28" />
+            <stop offset="100%" stopColor="#050a14" />
+          </radialGradient>
+        </defs>
+        <rect width="100" height="100" fill="url(#camBg)" />
+        <ellipse cx="50" cy="45" rx="22" ry="28" fill="#202738" />
+        <path d="M 28 75 C 28 65 38 62 50 62 C 62 62 72 65 72 75 L 72 100 L 28 100 Z" fill="#181d2c" />
+      </svg>
+      <span className="dd-cam-bracket tl"></span>
+      <span className="dd-cam-bracket tr"></span>
+      <span className="dd-cam-bracket bl"></span>
+      <span className="dd-cam-bracket br"></span>
+      {state === 'scanning' && <FaceMesh />}
+      {state === 'scanning' && <div className="dd-cam-scan" />}
+    </div>
+  );
+}
+
+// ============================================================
+// FOOTER
+// ============================================================
+function Footer({ scene }) {
+  return (
+    <footer className="dd-footer">
+      <div className={'dd-notice tone-' + scene.notice.tone}>
+        <div className="ico">{scene.notice.ico}</div>
+        <div className="text">{scene.notice.text}</div>
+      </div>
+      <div className="dd-entry">
+        <div className="dd-entry-tile">
+          <div className={'dd-qr ' + (scene.qr === 'disabled' ? 'disabled' : scene.qr === 'scanning' ? 'scanning' : '')}>
+            <QRCode />
+            {scene.qr === 'disabled' && (
+              <div className="dd-qr-stamp">{scene.qrStamp || (scene.k === 'closed' ? 'OFFLINE' : '禁入')}</div>
+            )}
+          </div>
+          <div className="cap">{scene.qr === 'disabled' ? '门禁已锁' : '扫码进门'}</div>
+        </div>
+        <div className="dd-entry-tile">
+          <Camera state={scene.cam} />
+          <div className="cap">{scene.cam === 'scanning' ? '识别中' : scene.cam === 'err' ? '识别失败' : '人脸核验'}</div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ============================================================
+// OVERLAYS
+// ============================================================
+function SuccessOverlay() {
+  return (
+    <div className="dd-overlay success">
+      <div className="ring">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 12.5 L 10 17.5 L 19 7.5" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+      <div className="title">欢迎，张一凡</div>
+      <div className="sub">门禁已开启 · 实验时段 14:00 - 17:00 · 请佩戴防护装备</div>
+      <div className="checks">
+        <div><div className="k">IDENTITY</div><div className="v">学生 · 材料研24</div></div>
+        <div><div className="k">RESERVATION</div><div className="v">通风柜 1 · ✓</div></div>
+        <div><div className="k">TRAINING</div><div className="v">有效 · ✓</div></div>
+        <div><div className="k">LIVENESS</div><div className="v">通过 · ✓</div></div>
+      </div>
+      <div className="countdown">3 SEC · AUTO RETURN</div>
+    </div>
+  );
+}
+
+function FailOverlay() {
+  return (
+    <div className="dd-overlay fail">
+      <div className="ring">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M6 6 L 18 18 M 18 6 L 6 18" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      </div>
+      <div className="title">身份核验未通过</div>
+      <div className="sub">人脸与已扫码身份不匹配 · 请联系实验室负责人或安全员</div>
+      <div className="checks">
+        <div><div className="k">SCAN ID</div><div className="v">张一凡 · 材料研24</div></div>
+        <div><div className="k">FACE MATCH</div><div className="v">41% · BELOW 75%</div></div>
+        <div><div className="k">ATTEMPTS</div><div className="v">3 / 3</div></div>
+        <div><div className="k">CONTACT</div><div className="v">王玉鸿 ·· 6688</div></div>
+      </div>
+      <div className="countdown">5 SEC · AUTO RETURN · LOGGED</div>
+    </div>
+  );
+}
+
+// ============================================================
+// MAIN COMPOSITION
+// ============================================================
+function DoorDisplay({ scene }) {
+  const [t, setT] = React.useState(new Date());
+  React.useEffect(() => {
+    const id = setInterval(() => setT(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const pad = n => String(n).padStart(2, '0');
+  const time = `${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}`;
+  const wd = ['SUN','MON','TUE','WED','THU','FRI','SAT'][t.getDay()];
+  const date = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())} · ${wd}`;
+
+  return (
+    <div className="dd-root" data-state={scene.state}>
+      {scene.haztape && <div className={'dd-haztape' + (scene.alert ? ' flash' : '')} />}
+      <Header scene={scene} time={time} date={date} />
+      <main className="dd-main">
+        <Hazards />
+        <KPIs scene={scene} />
+        <Presence scene={scene} />
+      </main>
+      <Footer scene={scene} />
+      {scene.haztape && <div className={'dd-haztape' + (scene.alert ? ' flash' : '')} />}
+      {scene.overlay === 'success' && <SuccessOverlay />}
+      {scene.overlay === 'fail' && <FailOverlay />}
+    </div>
+  );
+}
+
+// ============================================================
+// APP / TOOLBAR / SCALE
+// ============================================================
+function App() {
+  const [sceneKey, setSceneKey] = React.useState(() => localStorage.getItem('dd-scene') || 'busy');
+  const [autoplay, setAutoplay] = React.useState(false);
+  const [scale, setScale] = React.useState(0.45);
+
+  React.useEffect(() => { localStorage.setItem('dd-scene', sceneKey); }, [sceneKey]);
+
+  React.useEffect(() => {
+    const fit = () => {
+      const avail = window.innerHeight - 200;
+      const byH = avail / 1920;
+      const byW = (window.innerWidth - 60) / 1080;
+      const s = Math.max(0.28, Math.min(0.6, Math.min(byH, byW)));
+      setScale(s);
+    };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, []);
+
+  React.useEffect(() => {
+    if (!autoplay) return;
+    const id = setInterval(() => {
+      setSceneKey(k => {
+        const i = SCENES.findIndex(s => s.k === k);
+        return SCENES[(i + 1) % SCENES.length].k;
+      });
+    }, 5000);
+    return () => clearInterval(id);
+  }, [autoplay]);
+
+  const scene = SCENES.find(s => s.k === sceneKey) || SCENES[0];
+
+  return (
+    <div className="dd-stage" style={{ '--dd-scale': scale }}>
+      <div className="dd-toolbar">
+        <h1>实验室电子门牌</h1>
+        <span className="sub">Android 一体机 · <span className="mono">1080×1920 · {Math.round(scale * 100)}%</span></span>
+        <div className="dd-scene-chips">
+          {SCENES.map(s => (
+            <button key={s.k}
+              className={s.k === sceneKey ? 'active' : ''}
+              onClick={() => { setAutoplay(false); setSceneKey(s.k); }}>
+              <span className="chip-dot" style={{ background: s.chipDot }}></span>
+              {s.label}
+            </button>
+          ))}
+        </div>
+        <button className={'dd-toggle' + (autoplay ? ' on' : '')} onClick={() => setAutoplay(v => !v)}>
+          {autoplay ? '⏸ 暂停轮播' : '▶ 自动轮播 5s'}
+        </button>
+      </div>
+      <div className="dd-frame">
+        <DoorDisplay scene={scene} />
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
