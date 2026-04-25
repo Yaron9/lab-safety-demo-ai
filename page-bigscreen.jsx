@@ -77,8 +77,8 @@ function BigScreenPage({ onOpenLab }) {
           </BsCard>
 
           <div className="bs-row-2">
-            <BsCard title="危险类型热力 · 本周违规" hint="按日/按类">
-              <HazardHeatmap rows={heatRows} cols={heatCols} seed={seed} />
+            <BsCard title="关键设备状态" hint="实时巡检">
+              <EquipmentList />
             </BsCard>
             <BsCard title="今日人流" hint="出入峰值 09:00 · 14:00">
               <PeopleFlow />
@@ -366,6 +366,41 @@ function PeopleFlow() {
 
 function Dot({ c }) {
   return <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: c, marginRight: 4, marginLeft: 8 }}></span>;
+}
+
+/* ===========================================================
+   EquipmentList — 关键设备状态（替代危险热力图）
+   =========================================================== */
+const EQUIPMENT = [
+  { name: '通风柜 PFSY-01',  lab: 'A208', tone: 'warn', meta: '负载 78%' },
+  { name: '烟感探测器 FH-12', lab: '410', tone: 'err',  meta: '电量 28%' },
+  { name: '危化品柜 #3',      lab: '410', tone: 'err',  meta: '门未关' },
+  { name: '应急洗眼器',       lab: '302', tone: 'ok',   meta: '已检查' },
+  { name: '温湿度传感器 T-105', lab: '105', tone: 'ok',  meta: '21.5°C' },
+  { name: '压力表 P-312',     lab: '312', tone: 'ok',   meta: '0.30 MPa' },
+  { name: '气体监测 G-A208',  lab: 'A208', tone: 'warn', meta: 'VOC 偏高' },
+  { name: '门禁面板 D-302',   lab: '302', tone: 'ok',   meta: '在线' },
+];
+
+function EquipmentList() {
+  return (
+    <div className="bs-equip">
+      <div className="bs-equip-h">
+        <span>设备 · 位置</span>
+        <span>状态</span>
+      </div>
+      <div className="bs-equip-rows">
+        {EQUIPMENT.map((e, i) => (
+          <div key={i} className={'bs-equip-row tone-' + e.tone}>
+            <span className="bs-equip-dot" />
+            <span className="bs-equip-name">{e.name}</span>
+            <span className="bs-equip-lab">{e.lab}</span>
+            <span className="bs-equip-meta">{e.meta}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 /* ===========================================================
