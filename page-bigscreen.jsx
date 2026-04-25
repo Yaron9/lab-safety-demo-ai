@@ -38,9 +38,75 @@ function BigScreenPage({ onOpenLab }) {
         <div className="bs-col">
           <BsCard title="实验室分布" hint="当前状态" accent="#6ba4ff">
             <div className="bs-ring-wrap">
-              <svg viewBox="-70 -70 140 140">
+              <svg className="bs-radar" viewBox="-92 -92 184 184">
+                <defs>
+                  <linearGradient id="bsSweep" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="84" y2="0">
+                    <stop offset="0%" stopColor="#6ba4ff" stopOpacity="0" />
+                    <stop offset="100%" stopColor="#6ba4ff" stopOpacity="0.55" />
+                  </linearGradient>
+                  <radialGradient id="bsRadarHalo" cx="0.5" cy="0.5" r="0.5">
+                    <stop offset="0%" stopColor="#6ba4ff" stopOpacity="0.18" />
+                    <stop offset="60%" stopColor="#6ba4ff" stopOpacity="0.04" />
+                    <stop offset="100%" stopColor="#6ba4ff" stopOpacity="0" />
+                  </radialGradient>
+                  <filter id="bsRadarGlow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="1.5" />
+                  </filter>
+                </defs>
+
+                {/* soft outer halo */}
+                <circle r="92" fill="url(#bsRadarHalo)" />
+
+                {/* outer dashed ring — slow CW rotation */}
+                <g>
+                  <circle r="84" fill="none" stroke="#6ba4ff" strokeOpacity="0.32"
+                    strokeWidth="0.6" strokeDasharray="2.5 5" />
+                  <animateTransform attributeName="transform" type="rotate"
+                    from="0" to="360" dur="32s" repeatCount="indefinite" />
+                </g>
+
+                {/* mid dashed ring — CCW counter rotation */}
+                <g>
+                  <circle r="76" fill="none" stroke="#6ba4ff" strokeOpacity="0.22"
+                    strokeWidth="0.4" strokeDasharray="1 3.5" />
+                  <animateTransform attributeName="transform" type="rotate"
+                    from="360" to="0" dur="22s" repeatCount="indefinite" />
+                </g>
+
+                {/* 24 tick marks every 15° */}
+                <g stroke="#6ba4ff" strokeOpacity="0.42">
+                  {Array.from({ length: 24 }, (_, i) => {
+                    const a = (i * 15 - 90) * Math.PI / 180;
+                    const major = i % 6 === 0;
+                    const r1 = 71, r2 = major ? 78 : 73.5;
+                    const sw = major ? 1.2 : 0.5;
+                    return (
+                      <line key={i}
+                        x1={Math.cos(a) * r1} y1={Math.sin(a) * r1}
+                        x2={Math.cos(a) * r2} y2={Math.sin(a) * r2}
+                        strokeWidth={sw} />
+                    );
+                  })}
+                </g>
+
+                {/* 4 cardinal crosshair brackets */}
+                <g stroke="#6ba4ff" strokeOpacity="0.55" fill="none" strokeWidth="0.8">
+                  <path d="M -88 -3 L -88 3 M -92 0 L -82 0" />
+                  <path d="M  88 -3 L  88 3 M  82 0 L  92 0" />
+                  <path d="M -3 -88 L 3 -88 M 0 -92 L 0 -82" />
+                  <path d="M -3  88 L 3  88 M 0  82 L 0  92" />
+                </g>
+
+                {/* radar sweep arc — fast CW rotation, glowing trail */}
+                <g filter="url(#bsRadarGlow)">
+                  <path d="M 0 0 L 78 0 A 78 78 0 0 1 55.15 55.15 Z"
+                    fill="url(#bsSweep)" opacity="0.6" />
+                  <animateTransform attributeName="transform" type="rotate"
+                    from="0" to="360" dur="4.5s" repeatCount="indefinite" />
+                </g>
+
+                {/* === existing donut, untouched === */}
                 <circle r={R} fill="none" stroke="#1a2340" strokeWidth="14" />
-                {/* segments */}
                 <circle r={R} fill="none" stroke="#16a34a" strokeWidth="14"
                   strokeDasharray={`${C * pctNormal} ${C}`}
                   strokeDashoffset="0" transform="rotate(-90)" />
@@ -50,6 +116,10 @@ function BigScreenPage({ onOpenLab }) {
                 <circle r={R} fill="none" stroke="#dc2626" strokeWidth="14"
                   strokeDasharray={`${C * pctRect} ${C}`}
                   strokeDashoffset={-C * (pctNormal + pctWarn)} transform="rotate(-90)" />
+
+                {/* inner core ring (decoration) */}
+                <circle r="38" fill="none" stroke="#6ba4ff" strokeOpacity="0.18" strokeWidth="0.4" />
+
                 <text textAnchor="middle" y="-4" fill="#fff" fontSize="26" fontWeight="700" fontFamily="var(--font-num)">{labs.length}</text>
                 <text textAnchor="middle" y="16" fill="#7ca0cc" fontSize="10">总间数</text>
               </svg>
