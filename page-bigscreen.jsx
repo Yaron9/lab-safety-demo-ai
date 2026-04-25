@@ -355,7 +355,7 @@ function PeopleFlow() {
         {data.map((v, i) => (
           <div key={i} className="bs-pf-bar-wrap">
             {i === maxIdx && <div className="bs-pf-peak">{v}</div>}
-            <div className="bs-pf-bar" style={{ height: (v / max) * 100 + '%' }}></div>
+            <div className="bs-pf-bar" style={{ height: (v / max) * 82 + '%' }}></div>
           </div>
         ))}
       </div>

@@ -661,26 +661,27 @@ kbd { font-family: var(--font-num); font-size: 10px; color: var(--ink-2); border
 .bs-pf-bar-wrap { flex: 1; height: 100%; display: flex; align-items: flex-end; position: relative; }
 .bs-pf-peak {
   position: absolute;
-  top: -2px;
+  bottom: calc(82% + 12px);
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--font-num);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #bcdcff;
   white-space: nowrap;
-  text-shadow: 0 0 6px rgba(107, 164, 255, 0.6);
+  text-shadow: 0 0 8px rgba(107, 164, 255, 0.7);
 }
 .bs-pf-peak::after {
   content: "";
   position: absolute;
   top: 100%;
+  margin-top: 2px;
   left: 50%;
   transform: translateX(-50%);
   width: 0; height: 0;
-  border-left: 3px solid transparent;
-  border-right: 3px solid transparent;
-  border-top: 4px solid #6ba4ff;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid #6ba4ff;
 }
 .bs-pf-bar {
   width: 100%; min-height: 2px;
