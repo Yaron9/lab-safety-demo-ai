@@ -102,7 +102,9 @@ function ProjectRow({ p, onClick }) {
 function ProjectPanel({ p, onClose }) {
   if (!p) return null;
   const lab = (MOCK.labs || []).find(l => l.id === p.lab);
-  const linkedHaz = (lab?.hazardSources || []).filter(h => (p.hazardSources || []).includes(h.id));
+  // 项目可能涉及当前 lab 之外的危险源（如跨实验室协作），从全局 hazardSources 查找
+  const allHaz = (MOCK.labs || []).flatMap(l => (l.hazardSources || []).map(h => ({ ...h, labId: l.id, labName: l.name })));
+  const linkedHaz = allHaz.filter(h => (p.hazardSources || []).includes(h.id));
   return (
     <>
       <div className="panel-ov" onClick={onClose}></div>
@@ -155,7 +157,10 @@ function ProjectPanel({ p, onClose }) {
                     <HazardKindChip k={h.kind} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 600 }}>{h.name}</div>
-                      <div className="meta mono" style={{ fontSize: 11 }}>{h.location}</div>
+                      <div className="meta mono" style={{ fontSize: 11 }}>
+                        {h.location}
+                        {h.labId !== p.lab && <span style={{ marginLeft: 6, color: 'var(--amber)' }}>· 跨实验室协作 · {h.labId}</span>}
+                      </div>
                     </div>
                     <HazardSeverityChip s={h.severity} />
                   </div>

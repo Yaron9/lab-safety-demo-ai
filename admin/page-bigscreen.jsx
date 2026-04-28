@@ -29,6 +29,30 @@ function BigScreenPage({ onOpenLab }) {
   const pctRect = rectifying / total;
   const R = 54, C = 2 * Math.PI * R;
 
+  // 7 日趋势反算（与 page-inbox 一致）
+  const trendAvg = Math.round(MOCK.trend7d.reduce((s, n) => s + n, 0) / MOCK.trend7d.length);
+  const trendToday = MOCK.trend7d[MOCK.trend7d.length - 1];
+  const trendDelta = trendAvg ? Math.round((trendToday - trendAvg) / trendAvg * 100) : 0;
+  const trendArrow = trendDelta > 0 ? '↑' : trendDelta < 0 ? '↓' : '→';
+  const trendHint = `日均 ${trendAvg} · 较均值 ${trendArrow}${Math.abs(trendDelta)}%`;
+
+  // 院系排行反算（按 dept group labs · 取 score 均值 · 当前压力事件数作为 trend 信号）
+  const deptMap = labs.reduce((m, l) => {
+    if (!m[l.dept]) m[l.dept] = [];
+    m[l.dept].push(l);
+    return m;
+  }, {});
+  const deptRows = Object.entries(deptMap).map(([name, deptLabs]) => {
+    const labIds = deptLabs.map(l => l.id);
+    const avg = Math.round(deptLabs.reduce((s, l) => s + l.score, 0) / deptLabs.length);
+    const issues = events.filter(e =>
+      labIds.includes(e.lab) &&
+      (e.status === 'active' || e.status === 'pending') &&
+      EVENT_KIND_META[e.kind]?.scoring
+    ).length;
+    return { name, score: avg, labs: deptLabs.length, trend: -issues * 2 };
+  }).sort((a, b) => b.score - a.score);
+
   return (
     <div className="bs-root">
       <BgHeader totalIn={totalIn} active={active.length} critical={critical.length} avgScore={avgScore} />
@@ -48,19 +72,12 @@ function BigScreenPage({ onOpenLab }) {
             />
           </BsCard>
 
-          <BsCard title="近 7 日事件趋势" hint="日均 26 · 环比 ↓12%" accent="#6ba4ff">
+          <BsCard title="近 7 日事件趋势" hint={trendHint} accent="#6ba4ff">
             <TrendChart data={MOCK.trend7d} />
           </BsCard>
 
-          <BsCard title="院系安全积分排行" hint="按加权平均">
-            <RankList
-              rows={[
-                { name: '材料化学系', score: 91, labs: 3, trend: +2 },
-                { name: '材料工程系', score: 90, labs: 1, trend: 0 },
-                { name: '测试中心',   score: 85, labs: 3, trend: +1 },
-                { name: '材料物理系', score: 62, labs: 1, trend: -8 },
-              ]}
-            />
+          <BsCard title="院系安全积分排行" hint="按 lab 平均分">
+            <RankList rows={deptRows} />
           </BsCard>
         </div>
 
