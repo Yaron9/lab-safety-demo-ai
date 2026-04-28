@@ -123,13 +123,12 @@ button { font-family: inherit; cursor: pointer; }
 .tbl tr:hover td { background: var(--bg); }
 .tbl tr { cursor: pointer; }
 
-/* Event row */
-.ev { display: grid; grid-template-columns: 80px 1fr auto; gap: 14px; padding: 14px 16px; border-left: 3px solid var(--line); background: #fff; border-bottom: 1px solid var(--line-2); align-items: center; cursor: pointer; transition: background 0.12s; }
+/* Event row · severity 走 ev-t-kind 字符着色（meta.color）+ critical 浅底色，
+ *   去除 border-left 彩色竖条（.impeccable.md anti-reference 红线） */
+.ev { display: grid; grid-template-columns: 80px 1fr auto; gap: 14px; padding: 14px 16px; background: #fff; border-bottom: 1px solid var(--line-2); align-items: center; cursor: pointer; transition: background 0.12s; }
 .ev:hover { background: var(--bg); }
-.ev-critical { border-left-color: var(--red); background: var(--red-soft); }
+.ev-critical { background: var(--red-soft); }
 .ev-critical:hover { background: #ffe4d4; }
-.ev-warning { border-left-color: var(--amber); }
-.ev-info { border-left-color: var(--brand); }
 .ev-done { opacity: 0.55; }
 .ev-t-time { font-size: 11px; color: var(--ink-3); text-align: center; }
 .ev-t-kind { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
@@ -691,16 +690,14 @@ kbd { font-family: var(--font-num); font-size: 10px; color: var(--ink-2); border
 }
 .bs-pf-axis { display: flex; justify-content: space-between; font-size: 10px; color: #5a73a0; margin-top: 6px; font-family: var(--font-num); padding: 0 4px; }
 
-/* Alerts column */
+/* Alerts column · severity 走背景 + 左上角严重度灯（去 border-left 红线） */
 .bs-alert-list { display: flex; flex-direction: column; }
 .bs-alert {
   padding: 10px 12px; border-bottom: 1px solid #1a2340;
-  border-left: 3px solid transparent;
 }
 .bs-alert:last-child { border-bottom: none; }
-.bs-sev-critical { border-left-color: #dc2626; background: linear-gradient(90deg, rgba(220,38,38,0.12), transparent 70%); }
-.bs-sev-warning { border-left-color: #d97706; }
-.bs-sev-info { border-left-color: #6ba4ff; }
+.bs-sev-critical { background: linear-gradient(90deg, rgba(220,38,38,0.18), transparent 80%); }
+.bs-sev-warning  { background: linear-gradient(90deg, rgba(217,119,6,0.10), transparent 80%); }
 .bs-alert-h { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 4px; }
 .bs-alert-lab { color: #fbbf24; font-weight: 700; font-family: var(--font-num); }
 .bs-alert-time { color: #5a73a0; font-family: var(--font-num); }
@@ -831,8 +828,8 @@ kbd { font-family: var(--font-num); font-size: 10px; color: var(--ink-2); border
 .rp-paper-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; }
 .rp-paper-grid .rp-h2 {
   font-size: 14px; font-weight: 700; color: var(--brand-dark);
-  border-left: 3px solid var(--brand); padding-left: 8px;
   margin: 16px 0 8px;
+  text-transform: uppercase; letter-spacing: 1.5px;
 }
 .rp-paper-grid p { margin: 0 0 8px; }
 .rp-paper-grid ul { margin: 0 0 8px; padding-left: 18px; }
