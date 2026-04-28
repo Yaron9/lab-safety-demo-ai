@@ -93,7 +93,7 @@ function BigScreenPage({ onOpenLab }) {
           </BsCard>
 
           <div className="bs-row-2">
-            <BsCard title="关键设备状态" hint="实时巡检">
+            <BsCard title="设备维护 · 临期提醒" hint="按到期日排序">
               <EquipmentList />
             </BsCard>
             <BsCard title="今日人流" hint="出入峰值 09:00 · 14:00">
@@ -387,33 +387,59 @@ function Dot({ c }) {
 }
 
 /* ===========================================================
-   EquipmentList — 关键设备状态（替代危险热力图）
+   EquipmentList — 设备维护 · 临期提醒（反馈 5）
+   --------------------------------------------------------------
+   按 nextDate - today 排序，前 N 项按距离天数自动 tone：
+     已逾期 / ≤ 7 天      → err（红）
+     ≤ 30 天             → warn（橙）
+     > 30 天             → ok（绿）
+   type: 'maintenance' 维护保养 / 'calibration' 计量校准
    =========================================================== */
 const EQUIPMENT = [
-  { name: '通风柜 PFSY-01',  lab: 'A208', tone: 'warn', meta: '负载 78%' },
-  { name: '烟感探测器 FH-12', lab: '410', tone: 'err',  meta: '电量 28%' },
-  { name: '危化品柜 #3',      lab: '410', tone: 'err',  meta: '门未关' },
-  { name: '应急洗眼器',       lab: '302', tone: 'ok',   meta: '已检查' },
-  { name: '温湿度传感器 T-105', lab: '105', tone: 'ok',  meta: '21.5°C' },
-  { name: '压力表 P-312',     lab: '312', tone: 'ok',   meta: '0.30 MPa' },
-  { name: '气体监测 G-A208',  lab: 'A208', tone: 'warn', meta: 'VOC 偏高' },
-  { name: '门禁面板 D-302',   lab: '302', tone: 'ok',   meta: '在线' },
+  { name: '烟感探测器 FH-12',   lab: '410',  type: 'maintenance', nextDate: '2026-04-18' },
+  { name: '压力表 P-312',       lab: '312',  type: 'calibration', nextDate: '2026-04-30' },
+  { name: '通风柜 PFSY-01',     lab: 'A208', type: 'maintenance', nextDate: '2026-05-02' },
+  { name: '气体监测 G-A208',    lab: 'A208', type: 'calibration', nextDate: '2026-05-08' },
+  { name: '危化品柜 #3',         lab: '410',  type: 'maintenance', nextDate: '2026-05-15' },
+  { name: '应急洗眼器',          lab: '302',  type: 'maintenance', nextDate: '2026-05-21' },
+  { name: '温湿度传感器 T-105', lab: '105',  type: 'calibration', nextDate: '2026-06-10' },
+  { name: '门禁面板 D-302',     lab: '302',  type: 'maintenance', nextDate: '2026-07-20' },
 ];
 
+function formatDueText(days) {
+  if (days < 0) return `逾期 ${Math.abs(days)} 天`;
+  if (days === 0) return '今日到期';
+  if (days === 1) return '明日到期';
+  return `${days} 天后`;
+}
+
 function EquipmentList() {
+  const today = new Date(MOCK.today || '2026-04-21');
+  const rows = EQUIPMENT.map(e => {
+    const days = Math.round((new Date(e.nextDate) - today) / 86400000);
+    const tone = days < 0 || days <= 7 ? 'err' : days <= 30 ? 'warn' : 'ok';
+    return { ...e, days, tone };
+  }).sort((a, b) => a.days - b.days);
+  const overdueOrSoon = rows.filter(r => r.tone === 'err').length;
+
   return (
     <div className="bs-equip">
       <div className="bs-equip-h">
-        <span>设备 · 位置</span>
-        <span>状态</span>
+        <span>设备 · 位置 · 类型</span>
+        <span>{overdueOrSoon > 0 ? `${overdueOrSoon} 项临期 / 逾期` : '正常巡检'}</span>
       </div>
       <div className="bs-equip-rows">
-        {EQUIPMENT.map((e, i) => (
+        {rows.map((e, i) => (
           <div key={i} className={'bs-equip-row tone-' + e.tone}>
             <span className="bs-equip-dot" />
-            <span className="bs-equip-name">{e.name}</span>
+            <span className="bs-equip-name">
+              {e.name}
+              <span style={{ marginLeft: 6, fontSize: 10, opacity: 0.6 }}>
+                {e.type === 'calibration' ? '校准' : '保养'}
+              </span>
+            </span>
             <span className="bs-equip-lab">{e.lab}</span>
-            <span className="bs-equip-meta">{e.meta}</span>
+            <span className="bs-equip-meta">{formatDueText(e.days)}</span>
           </div>
         ))}
       </div>
