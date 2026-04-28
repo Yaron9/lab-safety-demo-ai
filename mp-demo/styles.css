@@ -782,6 +782,12 @@ body {
 .alert-step.done::before { content: '✓'; font-weight: bold; }
 .alert-step.todo::before { content: '○'; }
 
+/* LIVE 标识闪烁（反馈 4 实时看板） */
+@keyframes mp-live-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
 /* 快捷入口九宫格（4 列自动换行 · Step 3-3 起 6+ 入口需多行） */
 .quick-grid {
   display: grid;

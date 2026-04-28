@@ -142,6 +142,9 @@ const StuHomePage = ({ onNav }) => {
         </div>
       )}
 
+      {/* 我的实验室 · 实时（反馈 4） */}
+      <LabRealtimeCard lab={(MP.labs || []).find(l => l.id === '302')} />
+
       {/* 今日预约 */}
       <div className="wx-card">
         <div className="wx-card-title">

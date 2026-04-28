@@ -25,6 +25,8 @@
 //   mode: 'weekday' (4 级：学生→导师→实验中心→副院长) | 'weekend' (3 级：学生→导师→实验中心)
 //   status: 'advisor-review' | 'center-review' | 'dean-review' | 'approved' |
 //           'rejected' | 'in-progress' | 'closed'
+// labs[i] += { contacts?: [{role, name, phone}] }
+//   反馈 4 · 实时看板的「呼叫」按钮目标，role: 'lead' | 'inspector'
 // ============================================================
 
 window.MP = {
@@ -57,6 +59,7 @@ window.MP = {
     dept: '材料学院',
     title: '副教授 · 博士生导师',
     labs: 3,
+    myLabIds: ['302', '312', '410'],   // 反馈 4 · 教师 home 实时看板列表
     students: 12,
     score: 92,
     pending: 1,
@@ -321,8 +324,14 @@ window.MP = {
   ],
 
   // 实验室精简版（仅学生只读视图字段；与 admin/labs 字段子集一致）
+  // 反馈 4 · 实时看板：inRoom / temp / contacts / camHue（视频缩略图色相）
   labs: [
     { id: '302', name: '电化学与储能材料实验室', dept: '材料化学系', lead: '赵振华',
+      inRoom: 3, temp: 22.2, camHue: 210,
+      contacts: [
+        { role: 'lead', name: '赵振华', phone: '135-1206-6602' },
+        { role: 'inspector', name: '王玉鸿', phone: '135-1206-6688' },
+      ],
       hazards: ['腐蚀','火灾','爆炸','中毒','高压'],
       hazardSources: [
         { id: 'hs-302-01', kind: 'chemical', name: '浓硫酸 1 L', severity: 'critical', ppe: ['丁腈手套','防护面屏'] },
@@ -330,6 +339,11 @@ window.MP = {
         { id: 'hs-302-03', kind: 'electrical', name: '电化学工作站 CHI760E', severity: 'warning', ppe: ['绝缘鞋'] },
       ] },
     { id: '410', name: '功能材料合成实验室', dept: '材料物理系', lead: '周景明',
+      inRoom: 0, temp: 24.1, camHue: 0,
+      contacts: [
+        { role: 'lead', name: '周景明', phone: '135-1206-7301' },
+        { role: 'inspector', name: '王玉鸿', phone: '135-1206-6688' },
+      ],
       hazards: ['火灾','爆炸','高温','中毒'],
       hazardSources: [
         { id: 'hs-410-01', kind: 'physical', name: '管式炉 GSL-1700X', severity: 'critical', ppe: ['耐高温手套','防护面屏'] },
@@ -337,6 +351,11 @@ window.MP = {
         { id: 'hs-410-03', kind: 'chemical', name: '三氯化磷 500 mL', severity: 'critical', ppe: ['全面型防毒面具'] },
       ] },
     { id: 'A208', name: '色质联用与有机分析室', dept: '测试中心', lead: '钱雨桐',
+      inRoom: 2, temp: 26.8, camHue: 25,
+      contacts: [
+        { role: 'lead', name: '钱雨桐', phone: '135-1206-8403' },
+        { role: 'inspector', name: '王玉鸿', phone: '135-1206-6688' },
+      ],
       hazards: ['火灾','中毒','高温'],
       hazardSources: [
         { id: 'hs-A208-01', kind: 'chemical', name: '氢氟酸 500 mL', severity: 'critical', ppe: ['HF 专用手套','全面型防毒面具'] },
@@ -353,6 +372,11 @@ window.MP = {
         { id: 'hs-207-01', kind: 'electrical', name: 'SEM 加速电压 30 kV', severity: 'warning', ppe: ['绝缘鞋'] },
       ] },
     { id: '312', name: '手套箱与惰性气氛实验室', dept: '材料化学系', lead: '赵振华',
+      inRoom: 2, temp: 23.5, camHue: 270,
+      contacts: [
+        { role: 'lead', name: '赵振华', phone: '135-1206-6602' },
+        { role: 'inspector', name: '王玉鸿', phone: '135-1206-6688' },
+      ],
       hazards: ['爆炸','低温','缺氧'],
       hazardSources: [
         { id: 'hs-312-01', kind: 'chemical', name: '锂金属（手套箱内）', severity: 'critical', ppe: ['丁腈手套'] },
@@ -443,7 +467,7 @@ window.MP = {
       scope: '高温烧结后样品需在 800°C 下持续 6h 后自然降温至 50°C 以下方可取出',
       sop: '工艺已通过项目 proj-2026-01 学院终审 · 此次仅延长无人值守时段 · 现场配双人值班',
       accompanies: ['李思远（同组博三）', '陈延松（夜班巡查员）'],
-      emergency: '炉温异常报警 → 联系赵振华（135-xxxx-6602）+ 王玉鸿（135-xxxx-6688）',
+      emergency: '炉温异常报警 → 联系赵振华（135-1206-6602）+ 王玉鸿（135-1206-6688）',
       status: 'dean-review', currentStep: 3,
       timeline: [
         { time: '04-25 14:00', title: '学生申请',         desc: '张一凡 提交过夜申请 + SOP + 应急预案', done: true },

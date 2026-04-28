@@ -213,6 +213,12 @@ const TeaHomePage = ({ onNav, goPending }) => {
         </div>
       </div>
 
+      {/* 我负责的实验室 · 实时（反馈 4） */}
+      {(u.myLabIds || []).map(id => {
+        const lab = (MP.labs || []).find(l => l.id === id);
+        return lab ? <LabRealtimeCard key={id} lab={lab} /> : null;
+      })}
+
       {/* 今日实验 · 教师和学生一样要做 */}
       <div className="wx-card">
         <div className="wx-card-title">

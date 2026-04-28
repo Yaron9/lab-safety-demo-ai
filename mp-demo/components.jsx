@@ -222,8 +222,112 @@ const TeaSubmittedView = ({
   </MiniProgram>
 );
 
+// ============================================================
+// === LabRealtimeCard · 我的实验室 · 实时看板（反馈 4） ============
+// 学生 home / 教师 home 共用：视频缩略图（mock：色相渐变 + LIVE 标识）+
+// inRoom 头像组 + 温度 + 一键呼叫负责人/巡查员（tel: 跳系统拨号）
+// 仅显示 lab.contacts 配置的角色；缺数据时降级文字提示。
+// ============================================================
+const LabRealtimeCard = ({ lab }) => {
+  if (!lab) return null;
+  const inRoom = lab.inRoom ?? 0;
+  const temp = lab.temp ?? '—';
+  const hue = lab.camHue ?? 200;
+  const contacts = lab.contacts || [];
+  const lead = contacts.find(c => c.role === 'lead');
+  const inspector = contacts.find(c => c.role === 'inspector');
+
+  return (
+    <div className="wx-card" style={{ overflow: 'hidden' }}>
+      <div style={{ padding: '12px 16px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <div>
+          <div style={{ fontSize: 11, color: '#999', letterSpacing: 0.5 }}>MY LAB · LIVE</div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: '#000', marginTop: 2 }}>
+            {lab.id} · {lab.name}
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{lab.dept}</div>
+      </div>
+
+      {/* mock 视频缩略图：色相渐变 + LIVE 闪烁红点 + 摄像头图标 */}
+      <div style={{
+        position: 'relative', height: 140, margin: '0 16px', borderRadius: 8, overflow: 'hidden',
+        background: `linear-gradient(135deg, hsl(${hue}, 30%, 28%), hsl(${hue}, 35%, 14%))`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <div style={{ color: 'rgba(255,255,255,0.35)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+          <Icon name="camera" size={32} color="rgba(255,255,255,0.4)" />
+          <div style={{ fontSize: 10, fontFamily: 'JetBrains Mono, monospace', letterSpacing: 1.5 }}>CAM-{lab.id}</div>
+        </div>
+        {/* LIVE 标识 */}
+        <div style={{
+          position: 'absolute', top: 8, left: 8,
+          padding: '2px 8px', borderRadius: 3, fontSize: 10, fontWeight: 600,
+          background: 'rgba(212, 69, 58, 0.92)', color: '#fff', letterSpacing: 1,
+          display: 'flex', alignItems: 'center', gap: 4,
+        }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff', animation: 'mp-live-blink 1.2s infinite' }} />
+          LIVE
+        </div>
+        {/* 右下角时间码 */}
+        <div style={{
+          position: 'absolute', bottom: 6, right: 8,
+          fontSize: 10, color: 'rgba(255,255,255,0.55)',
+          fontFamily: 'JetBrains Mono, monospace',
+        }}>
+          {new Date().toTimeString().slice(0, 8)}
+        </div>
+      </div>
+
+      {/* 实时数据 + 在室人员 */}
+      <div style={{ padding: '10px 16px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 14 }}>
+          <div>
+            <div style={{ fontSize: 10, color: '#999' }}>在室</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: inRoom > 0 ? '#003f88' : '#999', fontFamily: 'JetBrains Mono, monospace' }}>{inRoom}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 10, color: '#999' }}>温度</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#333', fontFamily: 'JetBrains Mono, monospace' }}>{temp}°C</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex' }}>
+          {Array.from({ length: Math.min(inRoom, 3) }).map((_, i) => (
+            <div key={i} style={{
+              width: 26, height: 26, borderRadius: '50%',
+              background: `hsl(${(hue + i * 60) % 360}, 35%, 50%)`,
+              color: '#fff', fontSize: 11, fontWeight: 600,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: '2px solid #fff', marginLeft: i > 0 ? -6 : 0,
+            }}>{['赵','李','张'][i] || '·'}</div>
+          ))}
+          {inRoom === 0 && <div style={{ fontSize: 11, color: '#999' }}>暂无人员</div>}
+        </div>
+      </div>
+
+      {/* 通话按钮（tel: 跳拨号；当前 demo 仅展示 phone 占位） */}
+      <div style={{ padding: '8px 16px 14px', display: 'flex', gap: 8 }}>
+        {lead ? (
+          <a href={`tel:${lead.phone.replace(/[^0-9+]/g, '')}`}
+            className="wx-btn ghost" style={{ flex: 1, textDecoration: 'none', textAlign: 'center', fontSize: 12, padding: '8px 0', color: '#003f88', borderColor: '#c4d2e8', background: '#f0f4fa' }}>
+            ☎ 呼叫 {lead.name}（{lead.role === 'lead' ? '负责人' : '巡查员'}）
+          </a>
+        ) : (
+          <div className="wx-btn ghost" style={{ flex: 1, textAlign: 'center', fontSize: 12, padding: '8px 0', color: '#999' }}>未配置负责人</div>
+        )}
+        {inspector && (
+          <a href={`tel:${inspector.phone.replace(/[^0-9+]/g, '')}`}
+            className="wx-btn ghost" style={{ flex: 1, textDecoration: 'none', textAlign: 'center', fontSize: 12, padding: '8px 0', color: '#d4453a', borderColor: '#fdc6c0', background: '#fff5f3' }}>
+            ☎ 呼叫巡查员
+          </a>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // 导出到 window
 Object.assign(window, {
-  Icon, StatusBar, NavBar, TabBar, MiniProgram, TeaSubmittedView,
+  Icon, StatusBar, NavBar, TabBar, MiniProgram, TeaSubmittedView, LabRealtimeCard,
   MP_PROJECT_STATUS_META, MP_PROJECT_RISK_META, MP_PENDING_KIND_META,
 });
