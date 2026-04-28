@@ -1,21 +1,8 @@
 // ============================================================
 // 学生端 · 实验项目报备（反馈 3b）
 // 列表（含内嵌 timeline）/ 报备表单 / 提交成功 三页
+// 字典从 components.jsx 的 MP_PROJECT_STATUS_META / MP_PROJECT_RISK_META 读取
 // ============================================================
-
-const PROJECT_STATUS_MP = {
-  active:           { label: '进行中',          cls: 'green' },
-  rejected:         { label: '已驳回 · 待修订', cls: 'red' },
-  'advisor-review': { label: '导师审核中',      cls: 'orange' },
-  'center-review':  { label: '实验中心审核',    cls: 'orange' },
-  'dean-review':    { label: '学院终审',        cls: 'orange' },
-  closed:           { label: '已结案',          cls: 'gray' },
-};
-const RISK_TAG_MP = {
-  high:   { label: '高风险', cls: 'red' },
-  medium: { label: '中风险', cls: 'orange' },
-  low:    { label: '低风险', cls: 'green' },
-};
 
 // 我的项目列表（每项内嵌 timeline）
 const StuProjectListPage = ({ onNav }) => {
@@ -39,8 +26,8 @@ const StuProjectListPage = ({ onNav }) => {
           </div>
         </div>
       ) : mine.map(p => {
-        const stat = PROJECT_STATUS_MP[p.status] || { label: p.status, cls: 'gray' };
-        const risk = RISK_TAG_MP[p.riskLevel];
+        const stat = MP_PROJECT_STATUS_META[p.status] || { label: p.status, cls: 'gray' };
+        const risk = MP_PROJECT_RISK_META[p.riskLevel];
         return (
           <div key={p.id} className="wx-card">
             <div style={{ padding: '14px 16px 0' }}>
@@ -178,7 +165,7 @@ const StuProjectFormPage = ({ onNav }) => {
                     background: risk === r ? '#003f88' : '#f5f5f7', color: risk === r ? '#fff' : '#666',
                   }}
                 >
-                  {RISK_TAG_MP[r].label}
+                  {MP_PROJECT_RISK_META[r].label}
                 </div>
               ))}
             </div>

@@ -147,7 +147,40 @@ const MiniProgram = ({
   </div>
 );
 
+// ============================================================
+// === MP 端 UI 元数据字典（单一真相源 · 各页面只读不改） =======
+// 与 admin/MOCK 的 PROJECT_STATUS_META / PROJECT_RISK_META 语义对齐，
+// 但 cls 字段使用 mp 端的 wx-tag 颜色系（red/orange/green/blue/gold/gray）
+// 而非 admin 端的 chip-* class。新增 kind/status 时只改这一处。
+// ============================================================
+
+const MP_PROJECT_STATUS_META = {
+  active:           { label: '进行中',          cls: 'green' },
+  rejected:         { label: '已驳回 · 待修订', cls: 'red' },
+  'advisor-review': { label: '导师审核中',      cls: 'orange' },
+  'center-review':  { label: '实验中心审核',    cls: 'orange' },
+  'dean-review':    { label: '学院终审',        cls: 'orange' },
+  closed:           { label: '已结案',          cls: 'gray' },
+  draft:            { label: '草稿',            cls: 'gray' },
+};
+
+const MP_PROJECT_RISK_META = {
+  high:   { label: '高风险', cls: 'red' },
+  medium: { label: '中风险', cls: 'orange' },
+  low:    { label: '低风险', cls: 'green' },
+};
+
+// 教师端 TEA_PENDING.kind 的视觉元数据（icon 用 components.jsx 的 Icon 名）
+const MP_PENDING_KIND_META = {
+  appeal:  { tagCls: 'red',    bg: '#fbe9e7', color: '#d4453a', icon: 'warn' },
+  booking: { tagCls: 'blue',   bg: '#e5ecf5', color: '#003f88', icon: 'calendar' },
+  chem:    { tagCls: 'orange', bg: '#faf1e0', color: '#b8661a', icon: 'flask' },
+  rectify: { tagCls: 'gold',   bg: '#fbf4e0', color: '#8a6d28', icon: 'check-circle' },
+  project: { tagCls: 'blue',   bg: '#e5ecf5', color: '#003f88', icon: 'flask' },
+};
+
 // 导出到 window
 Object.assign(window, {
-  Icon, StatusBar, NavBar, TabBar, MiniProgram
+  Icon, StatusBar, NavBar, TabBar, MiniProgram,
+  MP_PROJECT_STATUS_META, MP_PROJECT_RISK_META, MP_PENDING_KIND_META,
 });

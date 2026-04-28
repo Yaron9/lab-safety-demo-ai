@@ -154,36 +154,30 @@ const TeaHomePage = ({ onNav, goPending }) => {
           </span>
         </div>
         <div className="wx-list">
-          {TEA_PENDING.slice(0, 3).map(p => (
-            <div key={p.id} className="wx-cell" onClick={() => goPending(p)}>
-              <div className="wx-cell-hd">
-                <div style={{
-                  width: 40, height: 40, borderRadius: 10,
-                  background: p.kind === 'appeal' ? '#fbe9e7' :
-                             p.kind === 'booking' ? '#e5ecf5' :
-                             p.kind === 'chem' ? '#faf1e0' : '#fbf4e0',
-                  color: p.kind === 'appeal' ? '#d4453a' :
-                         p.kind === 'booking' ? '#003f88' :
-                         p.kind === 'chem' ? '#b8661a' : '#8a6d28',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                  <Icon name={
-                    p.kind === 'appeal' ? 'warn' :
-                    p.kind === 'booking' ? 'calendar' :
-                    p.kind === 'chem' ? 'flask' : 'check-circle'
-                  } size={18}/>
+          {TEA_PENDING.slice(0, 3).map(p => {
+            const meta = MP_PENDING_KIND_META[p.kind] || { bg: '#f5f5f7', color: '#666', icon: 'info' };
+            return (
+              <div key={p.id} className="wx-cell" onClick={() => goPending(p)}>
+                <div className="wx-cell-hd">
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 10,
+                    background: meta.bg, color: meta.color,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <Icon name={meta.icon} size={18}/>
+                  </div>
                 </div>
-              </div>
-              <div className="wx-cell-bd">
-                <div className="wx-cell-bd-title">
-                  {p.title}
-                  <span className={'wx-tag ' + p.tagCls}>{p.tag}</span>
+                <div className="wx-cell-bd">
+                  <div className="wx-cell-bd-title">
+                    {p.title}
+                    <span className={'wx-tag ' + p.tagCls}>{p.tag}</span>
+                  </div>
+                  <div className="wx-cell-bd-desc">{p.sub}</div>
                 </div>
-                <div className="wx-cell-bd-desc">{p.sub}</div>
+                <div className="wx-cell-ft" style={{ fontSize: 11 }}>{p.time}</div>
               </div>
-              <div className="wx-cell-ft" style={{ fontSize: 11 }}>{p.time}</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -272,36 +266,30 @@ const TeaPendingListPage = ({ onNav, goPending }) => (
       ))}
     </div>
     <div className="wx-list" style={{ marginTop: 8 }}>
-      {TEA_PENDING.map(p => (
-        <div key={p.id} className="wx-cell" onClick={() => goPending(p)}>
-          <div className="wx-cell-hd">
-            <div style={{
-              width: 40, height: 40, borderRadius: 10,
-              background: p.kind === 'appeal' ? '#fbe9e7' :
-                         p.kind === 'booking' ? '#e5ecf5' :
-                         p.kind === 'chem' ? '#faf1e0' : '#fbf4e0',
-              color: p.kind === 'appeal' ? '#d4453a' :
-                     p.kind === 'booking' ? '#003f88' :
-                     p.kind === 'chem' ? '#b8661a' : '#8a6d28',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <Icon name={
-                p.kind === 'appeal' ? 'warn' :
-                p.kind === 'booking' ? 'calendar' :
-                p.kind === 'chem' ? 'flask' : 'check-circle'
-              } size={18}/>
+      {TEA_PENDING.map(p => {
+        const meta = MP_PENDING_KIND_META[p.kind] || { bg: '#f5f5f7', color: '#666', icon: 'info' };
+        return (
+          <div key={p.id} className="wx-cell" onClick={() => goPending(p)}>
+            <div className="wx-cell-hd">
+              <div style={{
+                width: 40, height: 40, borderRadius: 10,
+                background: meta.bg, color: meta.color,
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <Icon name={meta.icon} size={18}/>
+              </div>
             </div>
-          </div>
-          <div className="wx-cell-bd">
-            <div className="wx-cell-bd-title">
-              {p.title}
-              <span className={'wx-tag ' + p.tagCls}>{p.tag}</span>
+            <div className="wx-cell-bd">
+              <div className="wx-cell-bd-title">
+                {p.title}
+                <span className={'wx-tag ' + p.tagCls}>{p.tag}</span>
+              </div>
+              <div className="wx-cell-bd-desc">{p.sub}</div>
             </div>
-            <div className="wx-cell-bd-desc">{p.sub}</div>
+            <div className="wx-cell-ft arrow" style={{ fontSize: 11 }}>{p.time}</div>
           </div>
-          <div className="wx-cell-ft arrow" style={{ fontSize: 11 }}>{p.time}</div>
-        </div>
-      ))}
+        );
+      })}
     </div>
     <div style={{ padding: 16, textAlign: 'center', fontSize: 12, color: 'var(--text-3)' }}>
       — 到底了 · 共 {TEA_PENDING.length} 条待审 —
@@ -624,8 +612,7 @@ const TeaProjectPage = ({ onNav, item }) => {
   const [reason, setReason] = React.useState('');
   const [submitted, setSubmitted] = React.useState(false);
 
-  const RISK = { high: { l: '高风险', cls: 'red' }, medium: { l: '中风险', cls: 'orange' }, low: { l: '低风险', cls: 'green' } };
-  const risk = RISK[proj?.riskLevel] || { l: '—', cls: 'gray' };
+  const riskMeta = MP_PROJECT_RISK_META[proj?.riskLevel] || { label: '—', cls: 'gray' };
 
   if (submitted) {
     return (
@@ -669,7 +656,7 @@ const TeaProjectPage = ({ onNav, item }) => {
     <MiniProgram navTitle="项目报备审核" showBack onBack={() => onNav('t-pending')} hideTabBar>
       <div style={{ padding: '10px 16px 0', background: '#fff' }}>
         <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
-          <span className={'wx-tag ' + risk.cls}>{risk.l}</span>
+          <span className={'wx-tag ' + riskMeta.cls}>{riskMeta.label}</span>
           <span className="wx-tag blue">导师审核 · 第二级</span>
         </div>
         <div style={{ fontSize: 17, fontWeight: 600, color: '#000' }}>{proj.title}</div>
