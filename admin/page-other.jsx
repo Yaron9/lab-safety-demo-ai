@@ -137,6 +137,31 @@ function LabPanel({ lab, onClose }) {
             )}
           </div>
 
+          {/* Vacation Auth · 反馈 11 */}
+          {lab.vacationAuth && lab.vacationAuth.length > 0 && (
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+                寒暑假白名单 · {lab.vacationAuth.length} 人
+              </div>
+              <div className="stack-s">
+                {lab.vacationAuth.map(v => (
+                  <div key={v.studentId} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '8px 12px', background: 'var(--bg)', borderRadius: 6, fontSize: 12,
+                  }}>
+                    <span>
+                      <strong>{v.studentName}</strong>
+                      <span className="meta" style={{ marginLeft: 6 }}>· {v.dayOnly ? '仅日间' : '全天'} · 由 {v.grantedBy}</span>
+                    </span>
+                    <span className="meta mono" style={{ fontSize: 11 }}>
+                      {v.fromDate.slice(5)} → {v.toDate.slice(5)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Door preview */}
           <div>
             <div style={{ fontSize: 11, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>门牌屏幕预览 · 实时同步</div>

@@ -3,9 +3,12 @@
 /* === Schema 同构 · admin / mp-demo / doorplate 三端共享语义 ==================
  * labs[i]:   { id, name, dept, lead, status, level, nextInspection,
  *              temp, humidity, score, inRoom, today, hazards, note?, deadline?,
- *              hazardSources[] }
+ *              hazardSources[], vacationAuth?[] }
  *   status:  'normal' | 'warning' | 'rectifying'   （三档，仅此三档）
  *   level:   1 | 2                                  （一级周检 / 二级月检）
+ *   vacationAuth[i]: { studentId, studentName, fromDate, toDate, dayOnly,
+ *                      grantedBy, grantedAt }
+ *     寒暑假白名单（反馈 11）· 仅日间 dayOnly=true 表示禁止夜间进入
  * events[i]: { id, kind, severity, lab, time, title, detail, status,
  *              actors?, counter?, progress? }
  *   kind:    见下方 EVENT_KIND_META（单一真相源）
@@ -84,6 +87,10 @@ const MOCK = {
         { id: 'hs-302-03', kind: 'electrical', name: '电化学工作站 CHI760E', location: '302 · 工位 3',
           severity: 'warning', ppe: ['绝缘鞋'],
           emergency: '断电 → 隔离 · 切勿触碰输出端子（最高 ±10V / 1A）', lastCheck: '2026-04-10' },
+      ],
+      vacationAuth: [
+        { studentId: 'p02', studentName: '王语嫣', fromDate: '2026-07-15', toDate: '2026-08-31',
+          dayOnly: true, grantedBy: '赵振华', grantedAt: '2026-04-25' },
       ],
     },
     {
@@ -166,6 +173,12 @@ const MOCK = {
         { id: 'hs-312-03', kind: 'gas', name: '氩气惰性气氛', location: '312 · 室内整体',
           severity: 'info', ppe: ['氧浓度报警器'],
           emergency: '氧 < 19.5% 立即撤离 · 通风', lastCheck: '2026-04-15' },
+      ],
+      vacationAuth: [
+        { studentId: 'p02', studentName: '王语嫣', fromDate: '2026-07-15', toDate: '2026-07-30',
+          dayOnly: true, grantedBy: '赵振华', grantedAt: '2026-04-25' },
+        { studentId: 'p04', studentName: '孙静怡', fromDate: '2026-08-01', toDate: '2026-08-25',
+          dayOnly: true, grantedBy: '赵振华', grantedAt: '2026-04-26' },
       ],
     },
     {

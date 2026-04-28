@@ -62,11 +62,13 @@ const TEA_PENDING = [
 
 const TEA_STUDENTS = [
   { name: '张一凡', grade: '研三', score: 78, flag: 'yellow', tag: '挂黄牌', note: '夜间单人作业 · 整改中' },
-  { name: '刘梓萱', grade: '研二', score: 94, flag: 'good', tag: '优秀', note: '本月 0 违规 · 安全之星候选' },
+  { name: '刘梓萱', grade: '研二', score: 94, flag: 'good', tag: '优秀', note: '本月 0 违规 · 安全之星候选',
+    vacationAuth: { fromDate: '2026-07-15', toDate: '2026-08-31', dayOnly: true } },
   { name: '陈昊', grade: '研二', score: 88, flag: 'ok', tag: '正常', note: '培训完成度 4/5' },
   { name: '周佳明', grade: '研一', score: 92, flag: 'ok', tag: '正常', note: '刚完成入门培训' },
   { name: '王磊', grade: '博二', score: 82, flag: 'warn', tag: '整改中', note: '废液标签缺失 · 已拍照上传' },
-  { name: '李思远', grade: '博三', score: 96, flag: 'good', tag: '优秀', note: '连续 6 月零违规' },
+  { name: '李思远', grade: '博三', score: 96, flag: 'good', tag: '优秀', note: '连续 6 月零违规',
+    vacationAuth: { fromDate: '2026-07-15', toDate: '2026-08-25', dayOnly: true } },
   { name: '赵雪', grade: '研三', score: 90, flag: 'ok', tag: '正常', note: '培训完成度 5/5' },
 ];
 
@@ -395,65 +397,104 @@ const TeaReviewPage = ({ onNav, item }) => {
 };
 
 // ---------- 我的学生 ----------
-const TeaStudentsPage = ({ onNav }) => (
-  <MiniProgram navTitle="我的学生" showBack onBack={() => onNav('t-home')} hideTabBar>
-    <div style={{ padding: '12px 12px 4px', display: 'flex', gap: 8 }}>
-      <div style={{ flex: 1, padding: 12, background: '#fff', borderRadius: 10, textAlign: 'center' }}>
-        <div style={{ fontSize: 20, fontWeight: 700, color: '#003f88' }}>12</div>
-        <div style={{ fontSize: 11, color: 'var(--text-2)', marginTop: 2 }}>指导学生</div>
-      </div>
-      <div style={{ flex: 1, padding: 12, background: '#fff', borderRadius: 10, textAlign: 'center' }}>
-        <div style={{ fontSize: 20, fontWeight: 700, color: '#c9a961' }}>1</div>
-        <div style={{ fontSize: 11, color: 'var(--text-2)', marginTop: 2 }}>挂黄牌</div>
-      </div>
-      <div style={{ flex: 1, padding: 12, background: '#fff', borderRadius: 10, textAlign: 'center' }}>
-        <div style={{ fontSize: 20, fontWeight: 700, color: '#d4453a' }}>2</div>
-        <div style={{ fontSize: 11, color: 'var(--text-2)', marginTop: 2 }}>整改中</div>
-      </div>
-    </div>
+const TeaStudentsPage = ({ onNav }) => {
+  const total = TEA_STUDENTS.length;
+  const yellowCnt = TEA_STUDENTS.filter(s => s.flag === 'yellow').length;
+  const warnCnt = TEA_STUDENTS.filter(s => s.flag === 'warn').length;
+  const authCnt = TEA_STUDENTS.filter(s => s.vacationAuth).length;
 
-    <div className="wx-card">
-      <div className="wx-card-title">全部学生</div>
-      <div className="wx-list">
-        {TEA_STUDENTS.map(s => (
-          <div key={s.name} className="wx-cell" onClick={() => alert(s.name + ' · 学生详情页 · 功能开发中')}>
-            <div className="wx-cell-hd">
-              <div style={{
-                width: 42, height: 42, borderRadius: '50%',
-                background: s.flag === 'yellow' ? '#c9a961' :
-                           s.flag === 'warn' ? '#e8882b' :
-                           s.flag === 'good' ? '#003f88' : '#e5e5e5',
-                color: '#fff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 600, fontSize: 15
-              }}>{s.name[0]}</div>
-            </div>
-            <div className="wx-cell-bd">
-              <div className="wx-cell-bd-title">
-                {s.name}
-                <span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 400 }}>· {s.grade}</span>
-                {s.flag === 'yellow' && <span className="wx-tag yellow">{s.tag}</span>}
-                {s.flag === 'warn' && <span className="wx-tag orange">{s.tag}</span>}
-                {s.flag === 'good' && <span className="wx-tag blue">{s.tag}</span>}
-              </div>
-              <div className="wx-cell-bd-desc">{s.note}</div>
-            </div>
-            <div className="wx-cell-ft" style={{ flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: s.score >= 90 ? '#003f88' : s.score >= 80 ? '#333' : '#c9a961' }}>
-                {s.score}
-              </div>
-              <div style={{ fontSize: 10, color: 'var(--text-3)' }}>安全分</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+  const grant = (name) => {
+    if (window.confirm(`授权 ${name} 寒暑假（07-15 ~ 08-31）日间进入？\n\n（demo · 真实场景会推送至学院备案 + 门禁系统同步）`)) {
+      alert(`已授权 ${name} · 短信已发送 · 学院 HSE 已同步`);
+    }
+  };
 
-    <div style={{ padding: 16, textAlign: 'center', fontSize: 12, color: 'var(--text-3)' }}>
-      · 导师可查看所有指导学生的安全分、违规与培训进度 ·
-    </div>
-  </MiniProgram>
-);
+  return (
+    <MiniProgram navTitle="我的学生" showBack onBack={() => onNav('t-home')} hideTabBar>
+      <div style={{ padding: '12px 12px 4px', display: 'flex', gap: 8 }}>
+        <div style={{ flex: 1, padding: 12, background: '#fff', borderRadius: 10, textAlign: 'center' }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#003f88' }}>{total}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-2)', marginTop: 2 }}>指导学生</div>
+        </div>
+        <div style={{ flex: 1, padding: 12, background: '#fff', borderRadius: 10, textAlign: 'center' }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#c9a961' }}>{yellowCnt}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-2)', marginTop: 2 }}>挂黄牌</div>
+        </div>
+        <div style={{ flex: 1, padding: 12, background: '#fff', borderRadius: 10, textAlign: 'center' }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#d4453a' }}>{warnCnt}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-2)', marginTop: 2 }}>整改中</div>
+        </div>
+        <div style={{ flex: 1, padding: 12, background: '#fff', borderRadius: 10, textAlign: 'center' }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#2e7d32' }}>{authCnt}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-2)', marginTop: 2 }}>假期授权</div>
+        </div>
+      </div>
+
+      <div className="wx-card">
+        <div className="wx-card-title">全部学生</div>
+        <div className="wx-list">
+          {TEA_STUDENTS.map(s => (
+            <div key={s.name} className="wx-cell">
+              <div className="wx-cell-hd">
+                <div style={{
+                  width: 42, height: 42, borderRadius: '50%',
+                  background: s.flag === 'yellow' ? '#c9a961' :
+                             s.flag === 'warn' ? '#e8882b' :
+                             s.flag === 'good' ? '#003f88' : '#e5e5e5',
+                  color: '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: 600, fontSize: 15
+                }}>{s.name[0]}</div>
+              </div>
+              <div className="wx-cell-bd">
+                <div className="wx-cell-bd-title">
+                  {s.name}
+                  <span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 400 }}>· {s.grade}</span>
+                  {s.flag === 'yellow' && <span className="wx-tag yellow">{s.tag}</span>}
+                  {s.flag === 'warn' && <span className="wx-tag orange">{s.tag}</span>}
+                  {s.flag === 'good' && <span className="wx-tag blue">{s.tag}</span>}
+                  {s.vacationAuth && (
+                    <span className="wx-tag green" style={{ background: '#e5f5e9', color: '#2e7d32' }}>
+                      ✓ 假期授权
+                    </span>
+                  )}
+                </div>
+                <div className="wx-cell-bd-desc">
+                  {s.note}
+                  {s.vacationAuth && (
+                    <span style={{ marginLeft: 6, fontSize: 11, color: '#2e7d32' }}>
+                      · {s.vacationAuth.fromDate.slice(5)}→{s.vacationAuth.toDate.slice(5)} {s.vacationAuth.dayOnly ? '仅日间' : '全天'}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="wx-cell-ft" style={{ flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: s.score >= 90 ? '#003f88' : s.score >= 80 ? '#333' : '#c9a961' }}>
+                  {s.score}
+                </div>
+                {s.vacationAuth ? (
+                  <div style={{ fontSize: 10, color: 'var(--text-3)' }}>安全分</div>
+                ) : (
+                  <button
+                    className="wx-btn mini"
+                    style={{ fontSize: 11, padding: '3px 8px', background: '#f0f4fa', color: '#003f88', border: '1px solid #c4d2e8' }}
+                    onClick={(e) => { e.stopPropagation(); grant(s.name); }}
+                  >
+                    + 假期授权
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ padding: 16, textAlign: 'center', fontSize: 12, color: 'var(--text-3)' }}>
+        · 假期授权后，学生可在窗口期内白天进入对应实验室；夜间仍需走过夜实验四级审批 ·
+      </div>
+    </MiniProgram>
+  );
+};
 
 // ---------- 教师消息中心 ----------
 const TeaMsgPage = ({ onNav, goPending }) => {
