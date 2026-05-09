@@ -429,6 +429,7 @@ body {
   cursor: pointer;
   padding: 0 18px;
   gap: 6px;
+  white-space: nowrap;       /* 按钮文案不换行 · 长 label 由 flex 比例兜住 */
 }
 .wx-btn:active { background: var(--wx-green-dark); }
 .wx-btn.block { width: 100%; }

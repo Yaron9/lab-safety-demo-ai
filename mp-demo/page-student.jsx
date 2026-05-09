@@ -309,7 +309,7 @@ const StuBookPage = ({ onNav, tabItems = STU_TABS }) => {
 
           <div className="mp-bottom-bar">
             <button className="wx-btn ghost" style={{ flex: 1 }} onClick={() => onNav('home')}>存为草稿</button>
-            <button className="wx-btn block" style={{ flex: 2 }} onClick={() => onNav('home')}>
+            <button className="wx-btn block" style={{ flex: 3 }} onClick={() => onNav('home')}>
               提交预约 · 待教师审核
             </button>
           </div>
