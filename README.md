@@ -48,6 +48,21 @@
 
 含实验室名 + 状态徽章 + 责任人电话 + 危险类别 + 在场人员 + 实时危化品台账 + QR 扫码 + 人脸识别取景框 + 底部 PERIOD POINTS 仪表带（当前 6 月记分周期累积扣分）。
 
+### AI 助手（admin 端，阶段 A MVP）
+
+admin 右下角浮动「问」按钮 → 滑入 420px 右侧抽屉。基于 DeepSeek-V4（前端直连 api.deepseek.com，纯 GitHub Pages 部署不需要任何后端代理）。
+
+知识库三层全量注入 system prompt（约 15K tokens，DeepSeek 自动 prompt caching）：
+1. `lib/scoring-rules.js`（5 类 40 条规则 + 处置阈值 + 周期定义）
+2. `admin/mock.js` 简化版（8 间实验室 / 11 个事件 / 8 个人员的核心字段）
+3. `lib/policy-text.json`（学院 PDF 制度 18 条 + 附件总述，由 `scripts/ocr-policy.sh` 一次性 OCR）
+
+硬约束：扣分/档位/周期/倒计时必须从规则数据反算 + 引规则号，禁止口算；不超出 mock 数据；写操作仅生成草稿（阶段 A 不写）。
+
+**API key**：首次访问点右上角 ⚙ 粘贴 DeepSeek key（sk-...），仅存浏览器 localStorage，不进仓库不上传服务器。
+
+**演示前**：跑 `bash scripts/assistant-smoke.sh` 一键验证 key + CORS + 模型路由。
+
 ## 数据基准与单一来源
 
 - 三端 mock 同步到 `today: '2026-04-21'`（admin/mp-demo/doorplate）。

@@ -17,7 +17,7 @@
 | `/admin/` | Web 管理控制台 | `admin/index.html` + `admin/page-*.jsx` + `admin/shell.jsx` + `admin/styles.css` + `admin/mock.js` |
 | `/mp-demo/` | 微信小程序（H5 模拟，不上微信审核） | `mp-demo/index.html` + `mp-demo/page-*.jsx` + `mp-demo/components.jsx` + `mp-demo/styles.css` |
 | `/doorplate/` | 电子门牌（1080×1920 竖屏 kiosk） | `doorplate/index.html` + `doorplate/door-display.css`（独立目录，10 状态切换 · 含 `?mode=inspect`） |
-| `/lib/` | **三端共享单一来源** | `lib/scoring-rules.js`（IIFE 暴露 `window.SCORING`：5 类 40 条规则 + tally/verdict/currentPeriod 等纯函数 + localStorage 持久化） |
+| `/lib/` | **三端共享单一来源** | `lib/scoring-rules.js`（IIFE 暴露 `window.SCORING`：5 类 40 条规则 + tally/verdict/currentPeriod 等纯函数 + localStorage 持久化） · `lib/policy-text.json`（PDF OCR 切片 20 段，构建期由 `scripts/ocr-policy.sh` 一次性产出） · `lib/assistant/`（admin 端浮动 AI 助手 · chat-widget.jsx + styles-assistant.css · 前端直连 DeepSeek-V4 + localStorage key） |
 
 `admin/mock.js` 是 admin 唯一数据源；`mp-demo/mock.js` 是小程序自己的；门牌的 LAB/SCENES 内联在 `doorplate/index.html` 里。三端 `today` 必须同步到 `'2026-04-21'`（已是当前基准）。
 
@@ -92,6 +92,7 @@ gh run list -R Yaron9/lab-safety-demo --limit 1
 - **设计大改用 worktree** — 不确定方向的视觉/结构改动开 `git worktree add` 到 `../lab-safety-demo-XYZ`，并起独立端口（8735）对照 main 的 8734。确认了再 ff merge。已删过 `radar` 分支的 worktree。
 - **设计 skill 使用** — `/impeccable craft` 走完整流程（先读 `.impeccable.md` 上下文）。带具体硬约束 brief，不要让 skill 重新发挥。
 - **UI 改完用 Playwright 自审** — 见 `memory/feedback_review_before_handoff.md`。
+- **AI 助手 key 走 localStorage** — admin 的浮动助手前端直连 DeepSeek，API key 只存浏览器 `localStorage['lab-safety-assistant-deepseek-key']`，不进仓库不上传服务器。本地开发用 `security find-generic-password -a DEEPSEEK_API_KEY -s tencent-cloud-cli -w` 取出粘进浏览器；演示前跑 `bash scripts/assistant-smoke.sh` 验证 key + CORS + 模型路由。
 
 ## 不要做的
 
