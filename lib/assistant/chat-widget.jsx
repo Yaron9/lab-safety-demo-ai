@@ -115,7 +115,11 @@ function AssistantWidget() {
   const [messages, setMessages] = React.useState([]);
   const [input, setInput] = React.useState('');
   const [busy, setBusy] = React.useState(false);
-  const [apiKey, setApiKey] = React.useState(() => localStorage.getItem(LS_KEY) || '');
+  // 优先级：localStorage（用户手粘的）> window.BUILT_IN_KEY（CI 注入的）> ''
+  // 这样本地开发能用本地存的 key，preview repo 上甲方零摩擦
+  const [apiKey, setApiKey] = React.useState(() =>
+    localStorage.getItem(LS_KEY) || (typeof window !== 'undefined' && window.BUILT_IN_KEY) || ''
+  );
   const [setupOpen, setSetupOpen] = React.useState(false);
   const [keyDraft, setKeyDraft] = React.useState('');
   const [error, setError] = React.useState('');
