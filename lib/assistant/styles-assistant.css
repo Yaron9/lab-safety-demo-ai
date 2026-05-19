@@ -1,0 +1,119 @@
+/* AI 助手浮窗 · 阶段 A 骨架（假回复，无后端）
+ * 复用 admin/styles.css 的 CSS 变量（--ink/--line/--paper/--brand/--ink-2/--ink-3/--font-num/--sh-lg）
+ * 调性：.impeccable.md —— hairline、无 gradient、无 emoji 浮按钮、无 border-left 彩条
+ */
+
+/* ─── 浮按钮 · 右下角 56px ────────────────────────────────────────────── */
+.ass-fab {
+  position: fixed; right: 24px; bottom: 24px;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--ink); color: #fff;
+  border: 0;
+  font-family: var(--font);
+  font-size: 18px; font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--sh-lg);
+  z-index: 90;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.ass-fab:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(15,23,42,0.16), 0 4px 10px rgba(15,23,42,0.08); }
+.ass-fab:active { transform: translateY(0); }
+.ass-fab[data-open="true"] { background: var(--ink-2); font-size: 22px; font-weight: 400; }
+
+/* ─── 抽屉 · 右侧 420px 滑入 · 不遮罩底层（保持"边对话边查表"） ────────── */
+.ass-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 420px; max-width: 92vw;
+  background: var(--paper);
+  border-left: 1px solid var(--line);
+  box-shadow: var(--sh-lg);
+  z-index: 91;
+  display: flex; flex-direction: column;
+  animation: slideIn 0.2s ease-out;
+}
+
+/* ─── 头部 ───────────────────────────────────────────────────────────── */
+.ass-head { padding: 18px 22px 14px; border-bottom: 1px solid var(--line); }
+.ass-kicker {
+  font-family: var(--font-num); font-size: 10px; letter-spacing: 1.5px;
+  color: var(--ink-3); text-transform: uppercase; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 8px;
+}
+.ass-kicker-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; }
+.ass-title { font-size: 15px; font-weight: 600; color: var(--ink); letter-spacing: 0.2px; }
+.ass-sub { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+
+/* ─── 消息列表 ───────────────────────────────────────────────────────── */
+.ass-body {
+  flex: 1; overflow-y: auto;
+  padding: 14px 18px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+/* 空状态 · 快捷追问 */
+.ass-empty { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; }
+.ass-empty-kicker {
+  font-family: var(--font-num); font-size: 10px; letter-spacing: 1.5px;
+  color: var(--ink-3); margin-bottom: 4px;
+}
+.ass-empty button {
+  text-align: left;
+  background: #fff; border: 1px solid var(--line); border-radius: 6px;
+  padding: 9px 12px; font-size: 13px; color: var(--ink-2);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+.ass-empty button:hover {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+/* 消息气泡 */
+.ass-msg { display: flex; }
+.ass-msg-user { justify-content: flex-end; }
+.ass-msg-assistant { justify-content: flex-start; }
+.ass-msg-bubble {
+  max-width: 88%;
+  padding: 9px 13px; border-radius: 10px;
+  font-size: 13px; line-height: 1.6;
+  border: 1px solid var(--line);
+  white-space: pre-wrap; word-break: break-word;
+}
+.ass-msg-user .ass-msg-bubble { background: var(--brand); color: #fff; border-color: var(--brand); }
+.ass-msg-assistant .ass-msg-bubble { background: var(--paper); color: var(--ink); }
+.ass-thinking {
+  font-family: var(--font-num); letter-spacing: 4px; color: var(--ink-3);
+  animation: ass-thinking 1.2s infinite;
+}
+@keyframes ass-thinking { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+/* ─── 输入框 ─────────────────────────────────────────────────────────── */
+.ass-input {
+  display: flex; gap: 8px;
+  padding: 11px 14px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+.ass-input input {
+  flex: 1;
+  border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 12px; font-size: 13px;
+  outline: none;
+  font-family: inherit; color: var(--ink);
+  background: var(--paper);
+}
+.ass-input input:focus { border-color: var(--brand); }
+.ass-input input::placeholder { color: var(--ink-3); }
+.ass-input button {
+  padding: 8px 16px;
+  background: var(--ink); color: #fff; border: 0; border-radius: 6px;
+  font-size: 13px; font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+.ass-input button:disabled { opacity: 0.35; cursor: not-allowed; }
+.ass-input button:hover:not(:disabled) { background: #1e293b; }

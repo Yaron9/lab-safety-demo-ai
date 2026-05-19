@@ -6,7 +6,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=26">
+<link rel="stylesheet" href="styles.css?v=27">
+<link rel="stylesheet" href="../lib/assistant/styles-assistant.css?v=27">
 </head>
 <body>
 <div id="root"></div>
@@ -15,21 +16,22 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-<script src="../lib/scoring-rules.js?v=26"></script>
-<script src="mock.js?v=26"></script>
-<script type="text/babel" src="shell.jsx?v=26"></script>
-<script type="text/babel" src="page-inbox.jsx?v=26"></script>
-<script type="text/babel" src="page-events.jsx?v=26"></script>
-<script type="text/babel" src="page-labs.jsx?v=26"></script>
-<script type="text/babel" src="page-other.jsx?v=26"></script>
-<script type="text/babel" src="page-bigscreen.jsx?v=26"></script>
-<script type="text/babel" src="page-training.jsx?v=26"></script>
-<script type="text/babel" src="page-chems.jsx?v=26"></script>
-<script type="text/babel" src="page-reports.jsx?v=26"></script>
-<script type="text/babel" src="page-sysmap.jsx?v=26"></script>
-<script type="text/babel" src="page-hazards.jsx?v=26"></script>
-<script type="text/babel" src="page-projects.jsx?v=26"></script>
-<script type="text/babel" src="page-scoring.jsx?v=26"></script>
+<script src="../lib/scoring-rules.js?v=27"></script>
+<script src="mock.js?v=27"></script>
+<script type="text/babel" src="shell.jsx?v=27"></script>
+<script type="text/babel" src="page-inbox.jsx?v=27"></script>
+<script type="text/babel" src="page-events.jsx?v=27"></script>
+<script type="text/babel" src="page-labs.jsx?v=27"></script>
+<script type="text/babel" src="page-other.jsx?v=27"></script>
+<script type="text/babel" src="page-bigscreen.jsx?v=27"></script>
+<script type="text/babel" src="page-training.jsx?v=27"></script>
+<script type="text/babel" src="page-chems.jsx?v=27"></script>
+<script type="text/babel" src="page-reports.jsx?v=27"></script>
+<script type="text/babel" src="page-sysmap.jsx?v=27"></script>
+<script type="text/babel" src="page-hazards.jsx?v=27"></script>
+<script type="text/babel" src="page-projects.jsx?v=27"></script>
+<script type="text/babel" src="page-scoring.jsx?v=27"></script>
+<script type="text/babel" src="../lib/assistant/chat-widget.jsx?v=27"></script>
 
 <script type="text/babel">
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
@@ -143,6 +145,8 @@ function App() {
           </div>
         </div>
       )}
+
+      <AssistantWidget />
     </div>
   );
 }
