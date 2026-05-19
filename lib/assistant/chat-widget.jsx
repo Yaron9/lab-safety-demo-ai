@@ -1,17 +1,19 @@
-/* AI 助手浮窗 · 阶段 A · Step 3：前端直连 DeepSeek（CORS 通） + localStorage key
+/* AI 助手浮窗 · 阶段 A · Step 4：前端直连 DeepSeek + 三层知识库注入
  *
- * 架构调整（用户指令 2026-05-19）：跳过腾讯云 SCF 中间层，纯前端直连 api.deepseek.com。
+ * 架构（用户指令 2026-05-19）：跳过腾讯云 SCF，纯前端直连 api.deepseek.com（CORS 已验证）。
  * 安全模型：API key 只存浏览器 localStorage（key='lab-safety-assistant-deepseek-key'），不进仓库。
- * 演示前在你的浏览器粘一次 key 即可；甲方拿到 URL 后第一次访问会看到"设置 key"提示。
  *
- * Step 4 会在 send() 里拼装 SCORING + MOCK + policy-text 三层 system prompt。
+ * System prompt 三层（v3.2 第 3.2 节）：
+ *   1. 角色 + 硬约束（口算禁令、必须引规则号、不超 mock）
+ *   2. SCORING.RULES + 处置阈值（来自 window.SCORING）
+ *   3. 简化 MOCK（labs/events/people 主字段，去掉冗余）+ policy-text.json 全文
  *
  * 暴露：window.AssistantWidget
  */
 
 const LS_KEY = 'lab-safety-assistant-deepseek-key';
 const API_URL = 'https://api.deepseek.com/chat/completions';
-const MODEL = 'deepseek-chat'; // 实际指向 deepseek-v4-flash（DeepSeek 自动路由）
+const MODEL = 'deepseek-chat'; // 实际指向 deepseek-v4-flash
 
 const SUGGESTIONS = [
   '302 实验室现在什么状态？',
@@ -19,6 +21,94 @@ const SUGGESTIONS = [
   '实验室扣到 60 分会怎么样？',
   '现在记分周期还剩多久？',
 ];
+
+/* ─── system prompt 构造 · 见 v3.2 文档第 3.2 节 ─────────────────────── */
+
+/** 把 MOCK 精简为 LLM 可消化的扁平结构。去掉 hazardSources 详细 PPE、
+ *  events.actors 字符串、训练 timeline 等次要字段，保留答题需要的核心字段。 */
+function simplifyMock(MOCK) {
+  if (!MOCK) return {};
+  const labs = (MOCK.labs || []).map(l => ({
+    id: l.id, name: l.name, dept: l.dept, lead: l.lead,
+    status: l.status, level: l.level,
+    inRoom: l.inRoom, capacity: l.capacity,
+    temp: l.temp, humidity: l.humidity,
+    hazards: l.hazards, note: l.note, deadline: l.deadline,
+    nextInspection: l.nextInspection,
+    labViolations: l.labViolations || [],
+  }));
+  const events = (MOCK.events || []).map(e => ({
+    id: e.id, kind: e.kind, severity: e.severity, lab: e.lab,
+    time: e.time, title: e.title, detail: e.detail, status: e.status,
+    ruleIds: e.ruleIds, multiplier: e.multiplier,
+    subjectPersonId: e.subjectPersonId, counter: e.counter,
+  }));
+  const people = (MOCK.people || []).map(p => ({
+    id: p.id, name: p.name, role: p.role, dept: p.dept,
+    labs: p.labs, training: p.training,
+    personalViolations: p.personalViolations || [],
+    advisor: p.advisor,
+  }));
+  return { today: MOCK.today, me: MOCK.me, labs, events, people };
+}
+
+/** 构造完整 system prompt 内容 · ~15K tokens。 */
+function buildSystemPrompt(policyText) {
+  const SCORING = window.SCORING;
+  const MOCK = window.MOCK;
+  const today = MOCK && MOCK.today;
+
+  const periodInfo = SCORING && today ? SCORING.currentPeriod(today) : null;
+  const periodLabel = periodInfo ? periodInfo.label : '未知';
+  const periodEnd = periodInfo ? periodInfo.end : '';
+
+  const rulesJson = SCORING ? JSON.stringify(SCORING.RULES, null, 0) : '[]';
+  const tiersJson = SCORING ? JSON.stringify({
+    person: SCORING.PERSON_THRESHOLDS,
+    lab: SCORING.LAB_THRESHOLDS,
+    periodLimits: SCORING.PERIOD_LIMITS,
+    categories: SCORING.CATEGORIES,
+  }, null, 0) : '{}';
+  const mockJson = JSON.stringify(simplifyMock(MOCK), null, 0);
+  const policyJson = JSON.stringify(policyText || [], null, 0);
+
+  return `你是中国地质大学（北京）材料科学与工程学院的实验室安全助手（HSE Assistant）。
+当前是 demo 阶段 A · Step 4，仅做纯问答（无工具调用，无写操作）。
+
+## 数据基准
+- 今日：${today || '2026-04-21'}
+- 当前记分周期：${periodLabel}（结束于 ${periodEnd}）
+- 数据来源：本院 8 间实验室 mock + 学院《实验室违规扣分细则及处理办法（试行）》PDF
+
+## 硬约束（违反就是 demo 翻车，必须遵守）
+1. **扣分 / 档位 / 周期 / 倒计时绝对不许口算**。所有数字必须来自下面 SCORING 数据 / MOCK 数据 / PDF 文本。
+   - 答个人累积扣分：从 MOCK.people[i].personalViolations 的 ruleIds 反查 SCORING.RULES 累加 points。
+   - 答实验室累积扣分：从 MOCK.labs[i].labViolations 同上。
+   - 答处置档位：用 SCORING.PERSON_THRESHOLDS / LAB_THRESHOLDS 对照。
+2. **答数字必须引规则号 + PDF 条款**。例如 "ppe-1（PDF 三-1，未戴护目镜，扣 3 分）"。
+3. **不超出 MOCK / SCORING / PDF 范围**。MOCK 里没有的实验室/人员，回答"我没有 X 的数据"，不要编造。
+4. **状态三档术语**：正常 / 关注 / 预警（normal / warning / rectifying）。不要用高危/中危/低危那套。
+5. **写操作仅生成草稿**，回答"我可以起草一份 XXX 草稿"，不要假装已经登记 / 已经审批 / 已经发送。
+6. **回答简洁**：直接给结论 + 1-2 行依据（规则号 + 数字 + PDF 出处），别长篇。
+
+## 处置阈值与周期定义（SCORING.PERSON_THRESHOLDS / LAB_THRESHOLDS / PERIOD_LIMITS / CATEGORIES）
+${tiersJson}
+
+## 全部 40 条扣分规则（SCORING.RULES · id/cat/code/desc/points/waivable）
+${rulesJson}
+
+## 当前 MOCK 数据（简化版 · labs / events / people）
+${mockJson}
+
+## PDF 制度文本（OCR 切片 · 第一条 ～ 第十八条 + 附件 1 总述）
+${policyJson}
+
+回答前先想：
+- 用户问的对象在 MOCK 里能找到吗？找不到就直说没数据。
+- 涉及数字吗？涉及就先在 SCORING.RULES 找规则号、查 points、做加法，绝不口算。
+- 涉及处置吗？查 PDF 第十/十一/十二条 + SCORING.*_THRESHOLDS 对照。
+`;
+}
 
 function AssistantWidget() {
   const [open, setOpen] = React.useState(false);
@@ -29,12 +119,21 @@ function AssistantWidget() {
   const [setupOpen, setSetupOpen] = React.useState(false);
   const [keyDraft, setKeyDraft] = React.useState('');
   const [error, setError] = React.useState('');
+  const [policyText, setPolicyText] = React.useState(null);
   const bodyRef = React.useRef(null);
   const abortRef = React.useRef(null);
 
   React.useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
   }, [messages, busy]);
+
+  // 一次性 fetch policy-text.json（PDF OCR 切片），缓存到 state
+  React.useEffect(() => {
+    fetch('../lib/policy-text.json')
+      .then(r => r.json())
+      .then(setPolicyText)
+      .catch(e => console.warn('[assistant] policy-text 加载失败', e));
+  }, []);
 
   const saveKey = () => {
     const trimmed = keyDraft.trim();
@@ -68,16 +167,11 @@ function AssistantWidget() {
     setMessages([...history, userMsg, { role: 'assistant', content: '' }]);
     setBusy(true);
 
+    const systemContent = buildSystemPrompt(policyText);
     const body = {
       model: MODEL,
       messages: [
-        {
-          role: 'system',
-          content:
-            '你是中国地质大学（北京）材料科学与工程学院的实验室安全助手（demo 阶段 A · Step 3，知识库尚未注入，Step 4 注入后才能回答扣分/状态类问题）。' +
-            '当前 demo 还在跑通阶段，遇到具体业务问题先回答"知识库正在接入中"，并示意一下问题会怎么处理。' +
-            '请用中文回答，简洁明了。',
-        },
+        { role: 'system', content: systemContent },
         ...history,
         userMsg,
       ],
