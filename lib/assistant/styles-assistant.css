@@ -40,9 +40,64 @@
   color: var(--ink-3); text-transform: uppercase; margin-bottom: 6px;
   display: flex; align-items: center; gap: 8px;
 }
-.ass-kicker-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; }
+.ass-kicker-dot { width: 6px; height: 6px; border-radius: 50%; background: #94a3b8; }
+.ass-kicker-dot[data-status="on"] { background: #10b981; }
+.ass-kicker-dot[data-status="off"] { background: #f59e0b; }
+.ass-title-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .ass-title { font-size: 15px; font-weight: 600; color: var(--ink); letter-spacing: 0.2px; }
+.ass-gear {
+  background: transparent; border: 0; cursor: pointer;
+  color: var(--ink-3); font-size: 15px;
+  width: 26px; height: 26px; border-radius: 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background 0.12s, color 0.12s;
+}
+.ass-gear:hover { background: var(--brand-soft); color: var(--brand); }
 .ass-sub { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+
+/* ─── 设置面板（粘 API key） ────────────────────────────────────────── */
+.ass-setup {
+  padding: 12px 22px 14px;
+  background: var(--bg, #f8fafc);
+  border-bottom: 1px solid var(--line);
+}
+.ass-setup-kicker {
+  font-family: var(--font-num); font-size: 10px; letter-spacing: 1.5px;
+  color: var(--ink-3); margin-bottom: 7px;
+}
+.ass-setup input {
+  width: 100%; box-sizing: border-box;
+  border: 1px solid var(--line); border-radius: 5px;
+  padding: 7px 10px; font-size: 12px;
+  font-family: var(--font-num); color: var(--ink);
+  background: #fff; outline: none;
+}
+.ass-setup input:focus { border-color: var(--brand); }
+.ass-setup-actions {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 8px; gap: 12px;
+}
+.ass-setup-hint { font-size: 11px; color: var(--ink-3); line-height: 1.4; }
+.ass-setup-btns { display: inline-flex; gap: 6px; flex-shrink: 0; }
+.ass-setup button {
+  padding: 5px 12px; background: var(--ink); color: #fff; border: 0; border-radius: 4px;
+  font-size: 12px; cursor: pointer; font-family: inherit;
+  transition: opacity 0.12s, background 0.12s;
+}
+.ass-setup button:disabled { opacity: 0.35; cursor: not-allowed; }
+.ass-setup .ass-btn-ghost {
+  background: transparent; color: var(--ink-3);
+  border: 1px solid var(--line);
+}
+.ass-setup .ass-btn-ghost:hover { color: var(--ink-2); border-color: var(--ink-3); }
+
+/* ─── 错误条 ─────────────────────────────────────────────────────────── */
+.ass-error {
+  padding: 8px 22px; background: #fef2f2; color: #991b1b;
+  font-size: 11px; line-height: 1.5;
+  border-bottom: 1px solid #fecaca;
+  font-family: var(--font-num);
+}
 
 /* ─── 消息列表 ───────────────────────────────────────────────────────── */
 .ass-body {
