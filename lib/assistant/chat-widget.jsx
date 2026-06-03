@@ -285,11 +285,19 @@ function AssistantWidget() {
             </div>
             <div className="ass-title-row">
               <div className="ass-title">实验室安全助手</div>
-              <button
-                className="ass-gear"
-                onClick={() => setSetupOpen(s => !s)}
-                title="设置 API key"
-              >⚙</button>
+              <div className="ass-head-actions">
+                <button
+                  className="ass-gear"
+                  onClick={() => setSetupOpen(s => !s)}
+                  title="设置 API key"
+                >⚙</button>
+                <button
+                  className="ass-close"
+                  onClick={() => setOpen(false)}
+                  title="关闭助手"
+                  aria-label="关闭助手"
+                >×</button>
+              </div>
             </div>
             <div className="ass-sub">问扣分细则 · 查实验室状态 · 起草事件登记</div>
           </div>
